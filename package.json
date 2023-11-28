@@ -1,0 +1,23 @@
+{
+  "name": "scooter-app",
+  "version": "0.0.1",
+  "description": "scooter-stuff",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/best-scooter/scooter-app.git"
+  },
+  "author": "LS",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/best-scooter/scooter-app/issues"
+  },
+  "homepage": "https://github.com/best-scooter/scooter-app#readme",
+  "dependencies": {
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2"
+  }
+}
