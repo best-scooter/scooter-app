@@ -1,7 +1,7 @@
 import Scooter from "./types/scooter"
 import StatusMessage from "./types/statusMessage"
 
-const backendServer = "http://localhost:1337"
+const backendServer = process.env.BACKEND // just nu enbart development
 
 export default {
     // POST
@@ -18,11 +18,12 @@ export default {
             .then((result) => {
                 return result.data.scooterId
             })
+
         return scooterId
     },
 
     // GET single
-    read: async function (scooterId : number) : Promise<Scooter> {
+    read: async function (scooterId: number): Promise<Scooter> {
         const scooter = fetch(backendServer + "/scooter/" + scooterId)
             .then((response) => response.json())
             .then((result) => {
@@ -34,7 +35,9 @@ export default {
     // PUT
     update: async function (updatedScooter: Scooter): Promise<StatusMessage> {
         const scooterId = updatedScooter.id
-        let statusMessage : StatusMessage = {}
+        let statusMessage: StatusMessage = {
+            "success": false,
+        }
         const status = await fetch(backendServer + "/scooter/" + scooterId, {
             body: JSON.stringify(updatedScooter),
             headers: {
@@ -49,21 +52,16 @@ export default {
 
         if (status == 204) {
             statusMessage = {
-                "status": true,
+                "success": true,
                 "message": "Successfully updated scooter information",
             }
         } else {
             statusMessage = {
-                "status": false,
+                "success": false,
                 "message": "Failed to update scooter information",
             }
         }
 
         return statusMessage
-    },
-
-    // DELETE might not be needed from scooter side?
-    delete: function (scooterId) {
-
     }
 }

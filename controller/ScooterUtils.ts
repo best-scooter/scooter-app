@@ -1,34 +1,38 @@
 import ScooterApi from "../model/ScooterApi"
 import HardwareBridge from "../model/HardwareBridge"
-import Scooter from "../model/types/scooter.ts";
 import StatusMessage from "../model/types/statusMessage.ts";
+import ScooterMessage from "../model/types/scooterMessage.ts";
+import BatteryMessage from "../model/types/batteryMessage.ts";
 
-let scooterId=HardwareBridge.readScooterId()
+let scooterId = HardwareBridge.readScooterId()
 
 export default {
 
     // Krav 5. Kund ska kunna hyra cykel
-    rentBike: async function(): Promise<Object> {
-        let scooter= await ScooterApi.read(scooterId)
-        let rentScooterMessage = {}
-        if(
-            scooter.on &&
+    rentBike: async function (): Promise<ScooterMessage> {
+        let scooter = await ScooterApi.read(scooterId)
+        const battery = HardwareBridge.checkBattery()
+        let rentScooterMessage: ScooterMessage = {}
+
+        if (
             scooter.available &&
-            scooter.battery > 20 &&
+            battery > 20 &&
             !scooter.decomission &&
-            !scooter.being_serviced
-            ) {
-                !scooter.available
-                if (scooter.charging) {
-                    !scooter.charging
-                    // lägga till, startposition + starttid för resan? eller sköts det någon annanstans?
-                }
-            }
+            !scooter.being_serviced &&
+            !scooter.charging // cykel som laddas på laddstation kan inte hyras (förrän den är fulladdad???)
+        ) {
+            scooter.available = false
+            scooter.on = true
+            const position = HardwareBridge.checkPosition()
+            scooter.position_x = position.position_x
+            scooter.position_y = position.position_y
+        }
 
-        const updatedScooter =  scooter
+        const updatedScooter = scooter
         const statusMessage = await ScooterApi.update(updatedScooter)
+        // postar jag en ny resa? eller vem äger det? vem lägger till startposition, starttid?
 
-        if(statusMessage.status) {
+        if (statusMessage.success) {
             rentScooterMessage = {
                 rentedScooterId: scooter.id,
                 "message": "Scooter " + scooter.id + " successfully rented",
@@ -41,82 +45,93 @@ export default {
         return rentScooterMessage
     },
 
-    // Krav 6. Kunde lämnar tillbaka cykel.
-    // Ska uppdateras: position, batteri (samt eventuell varning), available
-    returnScooter: async function(): Promise<Object> {
-        let scooter= await ScooterApi.read(scooterId)
-        let rentScooter = {}
+    // Krav 6. Kund lämnar tillbaka cykel.
+    returnScooter: async function (): Promise<ScooterMessage> {
+        let scooter = await ScooterApi.read(scooterId)
+        let returnScooterMessage: ScooterMessage = {}
+        const batteryStatus = this.checkBattery()
+        const needsCharging = batteryStatus.needsCharging
 
         scooter.available = true
-        
-        return -1
+        scooter.on = false
+        scooter.battery = batteryStatus.batteryLevel
+        const position = HardwareBridge.checkPosition()
+        scooter.position_x = position.position_x
+        scooter.position_y = position.position_y
+
+        const updatedScooter = scooter
+        const statusMessage = await ScooterApi.update(updatedScooter)
+
+        if (statusMessage.success) {
+            returnScooterMessage = {
+                "message": "Scooter " + scooter.id + " successfully returned",
+                "needsCharging": needsCharging
+            }
+        } else {
+            returnScooterMessage = {
+                "message": "Could not return scooter"
+            }
+        }
+
+        return returnScooterMessage
     },
 
     // Relaterat till krav 2, meddela position med jämna mellanrum
-    // Jag har utgått ifrån att det skickas en request från websocket till scootern att jämföra tidigare position med aktuell position
-    // Fråga att lösa: Hur ska vi simulera cyklarnas position?
-    // FÖRSLAG: vi har tre startpositioner i varje stad vi finns i. När programmet startas randomiserad cyklarna till en stad och en startposition i staden.
-    // När positionen ska uppdateras så uppdateras latitud och/eller longitid med en randomiserad siffra (float) mellan tex -10 till 10.
-    updatePosition: async function () {
-        const scooter= await ScooterApi.read(scooterId)
-        const oldPositionX= scooter.position_x
-        const oldPositionY = scooter.position_y
+    updatePosition: async function (): Promise<boolean> {
+        const scooter = await ScooterApi.read(scooterId)
 
-        const newPosition = HardwareBridge.updatePosition()
+        const position = HardwareBridge.checkPosition()
+        scooter.position_x = position.position_x
+        scooter.position_y = position.position_y
 
         let updatedScooter = scooter
-        ScooterApi.update(updatedScooter)
-        return -1 //currentPosition
+        const statusMessage = await ScooterApi.update(updatedScooter)
+        return statusMessage.success
     },
 
     // Krav 3, cykeln kan meddela om den kör (är tillgänglig) eller inte
-    checkAvailable: async function (): Promise<boolean>{
+    checkAvailable: async function (): Promise<boolean> {
         const scooter = await ScooterApi.read(scooterId)
         return scooter.available
     },
 
     // Krav 3, meddela aktuell hastighet
-    // Tänker liknande upplägg som för updatePosition. En förfrågan skickas till cykeln att jämföra tidigare hastighet med aktuell hastighet.
-    // Fråga att lösa: Hur ska vi simulera hastigheten?
-    updateSpeed: function(oldSpeed: number) {
-        return -1 // currentSpeed?
+    checkSpeed: function (): number {
+        const speed = HardwareBridge.checkSpeedometer()
+        return speed
     },
 
-    // Krav 4, kunna stänga av cykeln.
-    // En update görs i databasen som ändrar att cykeln är avstängd
-    turnOffOrOn: async function(off: boolean): Promise<StatusMessage> {
+    // Krav 4, kunna stänga av cykeln (eller starta).
+    turnOffOrOn: async function (off: boolean): Promise<StatusMessage> {
         const scooter = await ScooterApi.read(scooterId)
 
-        if(off) {
+        if (off) {
             scooter.on == false
         } else if (!off) {
             scooter.on == true
         }
 
-        const updatedScooter =  scooter
+        const updatedScooter = scooter
         const statusMessage = await ScooterApi.update(updatedScooter)
 
         return statusMessage
     },
 
-    checkBattery: async function(): Promise<Object> {
+    // krav 7, cykeln ska varna om den behöver laddas. vilket 'battery.needsCharging' kollar
+    checkBattery: async function (): Promise<BatteryMessage> {
         const scooter = await ScooterApi.read(scooterId)
+        const batteryLevel = HardwareBridge.checkBattery()
+
         let battery = {
-            "battery_level": scooter.battery,
-            "needsCharging": scooter.battery < 10 && !scooter.charging,
+            "batteryLevel": batteryLevel,
+            "needsCharging": batteryLevel < 10 && !scooter.charging,
         }
 
         return battery
     },
 
-    // Ändra statusen.
-    // Fixa så att den laddar 50% i timmen?
-    charging: function() {
-        return -1
-    },
-
-    // Uppdatera statusen services
-    servicedOrNot: async function(serviced: boolean): Promise<StatusMessage> {
+    // krav 9, kunna ändra till/från underhållsläge. 
+    servicedOrNot: async function (serviced: boolean): Promise<StatusMessage> {
         const scooter = await ScooterApi.read(scooterId)
 
         if (serviced) {
@@ -125,50 +140,29 @@ export default {
             scooter.being_serviced = false
         }
 
-        const updatedScooter =  scooter
+        const updatedScooter = scooter
         const statusMessage = await ScooterApi.update(updatedScooter)
 
         return statusMessage
     },
 
-    // Register a scooter object that reflects this scooter
-    // Then save the returned ID to the file system (function 
-    // should be in hardware_bridge)
-    registerScooter: async function (): Promise<StatusMessage> {
-        const position_x = HardwareBridge.createStartPositionX()
-        const position_y = HardwareBridge.createStartPositionY()
-        let statusMessage: StatusMessage = {}
+    // cykeln ska kunna laddas, och då inte gå att hyra tills den är klar
+    changeCharging: async function (shouldCharge: boolean): Promise<StatusMessage> {
+        const scooter = await ScooterApi.read(scooterId)
 
-        const newScooter = {
-            "id": 0,
-            "position_x": position_x,
-            "position_y": position_y,
-            "battery": 100.0,
-            "max_speed": 20,
-            "charging": false,
-            "connected": false,
-            "password": "",
-            "available": true,
-            "decomission": false,
-            "being_serviced": false,
-            "on": true,
+        if (shouldCharge) {
+            scooter.charging = true
+            scooter.available = false
+        } else if (!shouldCharge) {
+            scooter.charging = false
+            scooter.available = true
         }
 
-        const createdScooterId = await ScooterApi.create(newScooter)
-
-        if (Number.isInteger(createdScooterId)) {
-            HardwareBridge.saveScooterId(createdScooterId)
-            statusMessage = {
-                "status": true,
-                "message": "Scooter successfully registered",
-            }
-        } else {
-            statusMessage = {
-                "status": false,
-                "message": "Scooter was not registered"
-            }
-        }
+        const updatedScooter = scooter
+        const statusMessage = await ScooterApi.update(updatedScooter)
 
         return statusMessage
-    }
+    },
+
+    // cykeln ska spara en logg med resor
 }

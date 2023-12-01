@@ -1,29 +1,39 @@
+import Position from "./types/position"
+
 const fs = require('fs')
-// Här kan vi fejka hur hårdvaran kommer agera
-// gps-mappen bör vara en volym till docker-containern så att den kan uppdateras. läses som en text-fil
 
 export default {
-    // Funktion: Kolla om filen 'scooterId.txt' finns och innehåller ett id. Då finns cykeln.
-    // Om inte:  Cykeln försöker göra en post och lägga till sig själv. Post behöver returnera scooterId. Skapa filen 'scooterId.txt' med id.
-
-    saveScooterId: function(scooterId?: number): number {
-        return -1
-    },
-
-    readScooterId: function(): number {
-        const scooterId = fs.readFile("../scooterId.txt")
+    readScooterId: function (): number {
+        const scooterId = process.env.SCOOTER_ID
         return Number(scooterId)
     },
 
-    createStartPositionX: function(): number {
-        return -1
+    checkPosition: function (): Position {
+        let position_x_y = fs.readFile("../hardware/gps")
+        let positionArray = position_x_y.split(",") // eller ' ' eller \n
+        let position = {
+            "position_x": positionArray[0],
+            "position_y": positionArray[1]
+        }
+
+        return position
     },
 
-    createStartPositionY: function(): number {
-        return -1
+    checkBattery: function (): number {
+        const batteryLevel = fs.readFile("../hardware/battery")
+        return batteryLevel
     },
 
-    updatePosition: function(): number {
-        return -1
+    checkSpeedometer: function (): number {
+        const speed = fs.readFile("../hardware/speedometer")
+        return speed
+    },
+
+    lampOn: function (): void {
+        fs.writeFile("../hardware/redLight", "on")
+    },
+
+    lampOff: function (): void {
+        fs.writeFile("../hardware/redLight", "off")
     }
 }

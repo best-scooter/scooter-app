@@ -1,5 +1,5 @@
 type StatusMessage = {
-    status?: boolean;
+    success: boolean;
     message?: string;
 }
 

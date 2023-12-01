@@ -6,7 +6,7 @@ type Scooter = {
     max_speed: number;
     charging: boolean;
     connected: boolean;
-    password: string;
+    password?: string;
     available: boolean;
     decomission: boolean;
     being_serviced: boolean;
