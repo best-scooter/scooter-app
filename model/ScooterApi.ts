@@ -4,25 +4,12 @@ import StatusMessage from "./types/statusMessage"
 const backendServer = process.env.BACKEND // just nu enbart development
 
 export default {
-    // POST
-    create: function (newScooter: Scooter): Promise<number> {
-        const scooterDefaultId = 0
-        const scooterId = fetch(backendServer + "/scooter/" + scooterDefaultId, {
-            body: JSON.stringify(newScooter),
-            headers: {
-                "content-type": "application/json"
-            },
-            method: "PUT"
-        })
-            .then((response) => response.json())
-            .then((result) => {
-                return result.data.scooterId
-            })
-
-        return scooterId
-    },
-
-    // GET single
+    /**
+     * GET information about a single scooter
+     * @async
+     * @param {number} scooterId Scooter ID
+     * @returns {Object} A scooter object
+     */
     read: async function (scooterId: number): Promise<Scooter> {
         const scooter = fetch(backendServer + "/scooter/" + scooterId)
             .then((response) => response.json())
@@ -32,7 +19,12 @@ export default {
         return scooter
     },
 
-    // PUT
+    /**
+     * PUT (update) information about a scooter
+     * @async
+     * @param {Object} updatedScooter The scooter object that should be updated
+     * @returns {Object} Information about if the update was successful or not
+     */
     update: async function (updatedScooter: Scooter): Promise<StatusMessage> {
         const scooterId = updatedScooter.id
         let statusMessage: StatusMessage = {

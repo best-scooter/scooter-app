@@ -8,8 +8,14 @@ let scooterId = HardwareBridge.readScooterId()
 
 export default {
 
-    // Krav 5. Kund ska kunna hyra cykel
-    rentBike: async function (): Promise<ScooterMessage> {
+    /**
+     * Checks if a scooter can be rented by a customer. If so, the scooter is rented.
+     * Related to requirement 5: A customer should be able to rent a scooter.
+     * @async
+     * @param {number} customerId Customer ID
+     * @returns {Object} Information regarding if the scooter was successfully rented
+     */
+    beginTrip: async function (customerId: number): Promise<ScooterMessage> {
         let scooter = await ScooterApi.read(scooterId)
         const battery = HardwareBridge.checkBattery()
         let rentScooterMessage: ScooterMessage = {}
@@ -29,6 +35,9 @@ export default {
         }
 
         const updatedScooter = scooter
+
+        // Update the log with trip start, plats, tid, customerid
+
         const statusMessage = await ScooterApi.update(updatedScooter)
         // postar jag en ny resa? eller vem äger det? vem lägger till startposition, starttid?
 
@@ -45,8 +54,16 @@ export default {
         return rentScooterMessage
     },
 
-    // Krav 6. Kund lämnar tillbaka cykel.
-    returnScooter: async function (): Promise<ScooterMessage> {
+    // updateLog: fixa
+
+    /**
+     * Customer returns a scooter
+     * Related to requirement 6: Customer shoudl be able to return a scooter.
+     * @async
+     * @param {number} customerId Customer ID
+     * @returns {Object} Information regarding if the scooter was successfully returned
+     */
+    endTrip: async function (customerId: number): Promise<ScooterMessage> {
         let scooter = await ScooterApi.read(scooterId)
         let returnScooterMessage: ScooterMessage = {}
         const batteryStatus = this.checkBattery()
@@ -60,7 +77,11 @@ export default {
         scooter.position_y = position.position_y
 
         const updatedScooter = scooter
+
+        // Update the log with trip end, plats, tid, customerid
+
         const statusMessage = await ScooterApi.update(updatedScooter)
+
 
         if (statusMessage.success) {
             returnScooterMessage = {
@@ -76,7 +97,11 @@ export default {
         return returnScooterMessage
     },
 
-    // Relaterat till krav 2, meddela position med jämna mellanrum
+    /**
+     * Related to requirement 2: The bike should be able to update it's position (within regular intervals)
+     * @async
+     * @returns {boolean} If the update was successful or not
+     */
     updatePosition: async function (): Promise<boolean> {
         const scooter = await ScooterApi.read(scooterId)
 
@@ -89,19 +114,32 @@ export default {
         return statusMessage.success
     },
 
-    // Krav 3, cykeln kan meddela om den kör (är tillgänglig) eller inte
+    /**
+     * Related to requirement 3: The scooter should be able to tell if it's available
+     * @async
+     * @returns {boolean} If it is available or not
+     */
     checkAvailable: async function (): Promise<boolean> {
         const scooter = await ScooterApi.read(scooterId)
         return scooter.available
     },
 
     // Krav 3, meddela aktuell hastighet
+    /**
+     * Related to requirement 3: The scooter should be able to tell it's current speed
+     * @returns {number} Current speed
+     */
     checkSpeed: function (): number {
         const speed = HardwareBridge.checkSpeedometer()
         return speed
     },
 
-    // Krav 4, kunna stänga av cykeln (eller starta).
+    /**
+     * Related to requirement 4: You should be able to turn off/on the scooter
+     * @async
+     * @param {boolean} off If it should be turned off or not
+     * @returns {Object} Information if the update was successful or not
+     */
     turnOffOrOn: async function (off: boolean): Promise<StatusMessage> {
         const scooter = await ScooterApi.read(scooterId)
 
@@ -117,7 +155,11 @@ export default {
         return statusMessage
     },
 
-    // krav 7, cykeln ska varna om den behöver laddas. vilket 'battery.needsCharging' kollar
+    /**
+     * Related to requirement 7: The scooter should be able to warn if it needs charging
+     * @async
+     * @returns {Object} Information about battery status
+     */
     checkBattery: async function (): Promise<BatteryMessage> {
         const scooter = await ScooterApi.read(scooterId)
         const batteryLevel = HardwareBridge.checkBattery()
@@ -130,7 +172,12 @@ export default {
         return battery
     },
 
-    // krav 9, kunna ändra till/från underhållsläge. 
+    /**
+     * Related to requirement 9: Should be able to change to/from service mode.
+     * @async
+     * @param {boolean} serviced 
+     * @returns {Object} Information if the update was successful or not
+     */
     servicedOrNot: async function (serviced: boolean): Promise<StatusMessage> {
         const scooter = await ScooterApi.read(scooterId)
 
@@ -146,7 +193,13 @@ export default {
         return statusMessage
     },
 
-    // cykeln ska kunna laddas, och då inte gå att hyra tills den är klar
+    /**
+     * The scooter should be able to be charged. If it is being charged, it can not be rented until fully charged
+     * Related to requirement 9: A scooter which is being charged (at a charging station) should not be able to be rented by a customer
+     * @async
+     * @param {boolean} shouldCharge If the scooter should be charged or not
+     * @returns {Object} Information if the update was successful or not
+     */
     changeCharging: async function (shouldCharge: boolean): Promise<StatusMessage> {
         const scooter = await ScooterApi.read(scooterId)
 
@@ -162,7 +215,5 @@ export default {
         const statusMessage = await ScooterApi.update(updatedScooter)
 
         return statusMessage
-    },
-
-    // cykeln ska spara en logg med resor
+    }
 }
