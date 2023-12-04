@@ -1,25 +1,32 @@
 import Position from "../model/types/position"
+const basePath = "model/hardware/"
+const readFileFlag = { encoding: 'utf8', flag: 'r' }
+const writeFileFlag = { encoding: "utf8", flag: "w", mode: 0o666 }
 const fs = require('fs')
 
 export default {
     /**
-     * Get a fake battery level
+     * Get a fake battery level. Writes it to the fake 'battery hardware'-file.
      * @returns {number} The fake battery level between 0-100%
      */
     fakeBatteryLevel: function (): number {
         const max = 100
-        const batteryLevel = Math.random() * max
+        const batteryLevel = Math.floor(Math.random() * max)
+
+        fs.writeFileSync(basePath + "battery", batteryLevel.toString(), writeFileFlag)
 
         return batteryLevel
     },
 
     /**
-     * Get a fake current speed
+     * Get a fake current speed. Writes it to the fake fake 'speedometet hardware'-file.
      * @returns {number} The fake speed between 0-20 km/h
      */
     fakeSpeed: function (): number {
         const max = 20
-        const speed = Math.random() * max
+        const speed = Math.floor(Math.random() * max)
+
+        fs.writeFileSync(basePath + "speedometer", speed.toString(), writeFileFlag)
         return speed
     },
 
@@ -34,17 +41,18 @@ export default {
             "Malmö": "55.60587, 13.00073",
         }
 
-        const values = Object.values(fakeStartPositions)
+        const fakeStartPositionsValues = Object.values(fakeStartPositions)
 
-        const randomElement = Math.random() * values.length
-        const ranomPosition = values[randomElement]
+        const randomElement = Math.floor(Math.random() * fakeStartPositionsValues.length)
+        const randomPosition = fakeStartPositionsValues[randomElement].split(", ")
 
         const fakeStartPosition: Position = {
-            "position_x": Number(ranomPosition[0]),
-            "position_y": Number(ranomPosition[1])
+            "position_x": Number(randomPosition[0]),
+            "position_y": Number(randomPosition[1])
         }
 
-        fs.writeFile("../model/hardware/gps", fakeStartPosition.position_x + ", " + fakeStartPosition.position_y)
+        const fakeStartPositionString = fakeStartPosition.position_x.toString() + ", " + fakeStartPosition.position_y.toString()
+        fs.writeFileSync(basePath + "gps", fakeStartPositionString, writeFileFlag)
 
         return fakeStartPosition
     },
@@ -54,7 +62,7 @@ export default {
      * @returns {Object} A poisition object with the latitude and longitude
      */
     updateFakePosition: function (): Position {
-        const oldPosition = fs.readFile("../model/hardware/gps")
+        const oldPosition = fs.readFileSync(basePath + "gps", readFileFlag)
         const oldPositionXY = oldPosition.split(", ")
         const oldLatitudeNumber = Number(oldPositionXY[0])
         const oldLongitudeNumber = Number(oldPositionXY[1])
@@ -70,7 +78,7 @@ export default {
         const newLongitudeString = newLongitudeNumber.toString()
 
         const newPositionString = newLatitudeString + ", " + newLongitudeString
-        fs.writeFile("../model/hardware/gps", newPositionString)
+        fs.writeFileSync(basePath + "gps", newPositionString, writeFileFlag)
 
         const newFakePosition: Position = {
             "position_x": newLatitudeNumber,
