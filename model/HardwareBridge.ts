@@ -57,5 +57,34 @@ export default {
      */
     lampOff: function (): void {
         fs.writeFile("../hardware/redLight", "off")
+    },
+
+    /**
+     * Get the current date
+     * @returns {string} Returns the current date in the format DD-MM-YYYY
+     */
+    getDate: function (): string {
+        const currentDate = new Date()
+        const currentDayOfMonth = currentDate.getDate();
+        const currentMonth = currentDate.getMonth();
+        const currentYear = currentDate.getFullYear();
+
+        const dateString = currentDayOfMonth + "-" + (currentMonth + 1) + "-" + currentYear;
+
+        return dateString
+    },
+
+    /**
+     * Get the current time
+     * @returns {string} Returns the current time in the format HH-MM-SS
+     */
+    getTime: function (): string {
+        const currentDate = new Date()
+        const hours = currentDate.getHours()
+        const minutes = currentDate.getMinutes()
+        const seconds = currentDate.getSeconds()
+
+        const timeString = hours + ":" + minutes + ":" + seconds
+        return timeString
     }
 }

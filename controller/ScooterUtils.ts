@@ -1,8 +1,11 @@
+const fs = require('fs')
+
 import ScooterApi from "../model/ScooterApi"
 import HardwareBridge from "../model/HardwareBridge"
 import StatusMessage from "../model/types/statusMessage.ts";
 import ScooterMessage from "../model/types/scooterMessage.ts";
 import BatteryMessage from "../model/types/batteryMessage.ts";
+import Position from "../model/types/position.ts";
 
 let scooterId = HardwareBridge.readScooterId()
 
@@ -25,19 +28,18 @@ export default {
             battery > 20 &&
             !scooter.decomission &&
             !scooter.being_serviced &&
-            !scooter.charging // cykel som laddas på laddstation kan inte hyras (förrän den är fulladdad???)
+            !scooter.charging
         ) {
             scooter.available = false
             scooter.on = true
             const position = HardwareBridge.checkPosition()
             scooter.position_x = position.position_x
             scooter.position_y = position.position_y
+            const start = true
+            this.updateLog(start, customerId, position)
         }
 
         const updatedScooter = scooter
-
-        // Update the log with trip start, plats, tid, customerid
-
         const statusMessage = await ScooterApi.update(updatedScooter)
         // postar jag en ny resa? eller vem äger det? vem lägger till startposition, starttid?
 
@@ -54,11 +56,9 @@ export default {
         return rentScooterMessage
     },
 
-    // updateLog: fixa
-
     /**
      * Customer returns a scooter
-     * Related to requirement 6: Customer shoudl be able to return a scooter.
+     * Related to requirement 6: Customer should be able to return a scooter.
      * @async
      * @param {number} customerId Customer ID
      * @returns {Object} Information regarding if the scooter was successfully returned
@@ -76,9 +76,9 @@ export default {
         scooter.position_x = position.position_x
         scooter.position_y = position.position_y
 
+        const start = false
+        this.updateLog(start, customerId, position)
         const updatedScooter = scooter
-
-        // Update the log with trip end, plats, tid, customerid
 
         const statusMessage = await ScooterApi.update(updatedScooter)
 
@@ -95,6 +95,24 @@ export default {
         }
 
         return returnScooterMessage
+    },
+
+    /**
+     * Update the log at the beginning and end of every trip made with the scooter
+     * @param {boolean} start If it is the start or end of a trip
+     * @param {number} customerId Customer ID
+     * @param {Object} position The current position
+     * @returns {boolean} Indicates if the log was successfully updated or not
+     */
+    updateLog: function (start: boolean, customerId: number, position: Position): void {
+        const currentDate = HardwareBridge.getDate()
+        const currentTime = HardwareBridge.getTime()
+
+        if (start) {
+            fs.writeFile("../scooter-trips.log", "Journey start: " + customerId + " - " + position.position_x + " " + position.position_y + " - " + currentDate + " - " + currentTime + "\n")
+        } else if (!start) {
+            fs.writeFile("../scooter-trips.log", "Journey end: " + customerId + " - " + position.position_x + " " + position.position_y + " - " + currentDate + " - " + currentTime + "\n")
+        }
     },
 
     /**
@@ -124,7 +142,6 @@ export default {
         return scooter.available
     },
 
-    // Krav 3, meddela aktuell hastighet
     /**
      * Related to requirement 3: The scooter should be able to tell it's current speed
      * @returns {number} Current speed
