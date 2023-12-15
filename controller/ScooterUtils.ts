@@ -39,7 +39,7 @@ export default {
             scooter.positionX = position.position_x
             scooter.positionY = position.position_y
             const start = true
-            this.updateLog(start, customerId, position)
+            this.updateLog(start, customerId, position) // should be after a successful update?
 
             const updatedScooter = scooter
             const statusMessage = await ScooterApi.update(updatedScooter)
@@ -85,7 +85,7 @@ export default {
             scooter.positionY = position.position_y
 
             const start = false
-            this.updateLog(start, customerId, position)
+            this.updateLog(start, customerId, position) // should be after a successful update?
             const updatedScooter = scooter
 
             const statusMessage = await ScooterApi.update(updatedScooter)
@@ -136,7 +136,7 @@ export default {
         scooter.positionY = position.position_y
 
         const updatedScooter = scooter
-        const statusMessage = await ScooterApi.update(updatedScooter) // skicka till ws istället
+        const statusMessage = await ScooterApi.update(updatedScooter)
         return statusMessage.success
     },
 
