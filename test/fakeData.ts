@@ -7,11 +7,34 @@ const fs = require('fs')
 export default {
     /**
      * Get a fake battery level. Writes it to the fake 'battery hardware'-file.
-     * @returns {number} The fake battery level between 0-100%
+     * @returns {number} The fake battery level between 0-1 (exclusive), which represents battery level 0-100%
      */
     fakeBatteryLevel: function (): number {
-        const max = 100
-        const batteryLevel = Math.floor(Math.random() * max)
+        const batteryLevel = Math.random()
+
+        fs.writeFileSync(basePath + "battery", batteryLevel.toString(), writeFileFlag)
+
+        return batteryLevel
+    },
+
+    /**
+     * Get a fake low battery level. Writes it to the fake 'battery hardware'-file.
+     * @returns {number} Return battery level 0.01
+     */
+    fakeLowBattery: function (): number {
+        const batteryLevel = 0.01
+
+        fs.writeFileSync(basePath + "battery", batteryLevel.toString(), writeFileFlag)
+
+        return batteryLevel
+    },
+
+    /**
+     * Get a fake 50% battery level. Writes it to the fake 'battery hardware'-file.
+     * @returns {number} Return battery level 0.51
+     */
+    fakeBatteryLevel51: function (): number {
+        const batteryLevel = 0.51
 
         fs.writeFileSync(basePath + "battery", batteryLevel.toString(), writeFileFlag)
 
@@ -87,4 +110,20 @@ export default {
 
         return newFakePosition
     },
+
+    /**
+     * Get a specifik fake poisition, which will be Stockholm. Writes it to the fake 'gps hardware'-file in the format "latitude, longitude".
+     * @returns {Objet} Return a position object with latitude and longitude for Stockholm
+     */
+    fakeStockholmPosition: function (): Position {
+        const stockholm: Position = {
+            "position_x": 59.334591,
+            "position_y": 18.063240
+        }
+
+        const stockholmString = stockholm.position_x.toString() + ", " + stockholm.position_y.toString()
+        fs.writeFileSync(basePath + "gps", stockholmString, writeFileFlag)
+
+        return stockholm
+    }
 }

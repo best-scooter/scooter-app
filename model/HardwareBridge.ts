@@ -38,7 +38,7 @@ export default {
      */
     checkBattery: function (): number {
         const batteryLevel = fs.readFileSync(basePath + "battery", readFileFlag)
-        return Number(batteryLevel)
+        return parseFloat(batteryLevel)
     },
 
     /**

@@ -4,7 +4,7 @@
   "description": "scooter-stuff",
   "main": "index.js",
   "scripts": {
-    "test": "jest "
+    "test": "jest --coverage --setupFiles dotenv/config"
   },
   "repository": {
     "type": "git",
@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/best-scooter/scooter-app#readme",
   "dependencies": {
+    "dotenv": "^16.3.1",
+    "jest-fetch-mock": "^3.0.3",
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2"
   },

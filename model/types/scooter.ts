@@ -1,16 +1,18 @@
 type Scooter = {
     id: number;
-    position_x: number;
-    position_y: number;
+    createdAt?: string;
+    updatedAt?: string;
+    positionX: number;
+    positionY: number;
     battery: number;
-    max_speed: number;
+    maxSpeed: number;
     charging: boolean;
+    available: boolean;
+    decomissioned: boolean;
+    beingServiced: boolean;
+    disabled: boolean;
     connected: boolean;
     password?: string;
-    available: boolean;
-    decomission: boolean;
-    being_serviced: boolean;
-    on: boolean;
 }
 
 export default Scooter; 

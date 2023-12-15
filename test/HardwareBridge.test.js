@@ -1,6 +1,7 @@
 import HardwareBridge from "../model/HardwareBridge";
 import FakeData from "./fakeData";
 const fs = require('fs')
+
 const basePath = "model/hardware/"
 const readFileFlag = { encoding: 'utf8', flag: 'r' }
 const writeFileFlag = { encoding: "utf8", flag: "w", mode: 0o666 }
