@@ -21,9 +21,9 @@ export default {
      * @returns {Object} The information about latitude (position_x) and longitude (position_y)
      */
     checkPosition: function (): Position {
-        let position_x_y = fs.readFileSync(basePath + "gps", readFileFlag)
-        let positionArray = position_x_y.split(", ")
-        let position = {
+        const position_x_y = fs.readFileSync(basePath + "gps", readFileFlag)
+        const positionArray = position_x_y.split(", ")
+        const position = {
             "position_x": Number(positionArray[0]),
             "position_y": Number(positionArray[1])
         }

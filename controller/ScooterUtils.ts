@@ -22,7 +22,7 @@ export default {
      */
     beginScooterRent: async function (customerId: number): Promise<ScooterMessage> {
         const scooterId = HardwareBridge.readScooterId()
-        let scooter = await ScooterApi.read(scooterId)
+        const scooter = await ScooterApi.read(scooterId)
         const battery = HardwareBridge.checkBattery()
         let rentScooterMessage: ScooterMessage = {}
 
@@ -39,7 +39,7 @@ export default {
             scooter.positionX = position.position_x
             scooter.positionY = position.position_y
             const start = true
-            this.updateLog(start, customerId, position)
+            this.updateLog(start, customerId, position) // should be after a successful update?
 
             const updatedScooter = scooter
             const statusMessage = await ScooterApi.update(updatedScooter)
@@ -69,7 +69,7 @@ export default {
      */
     endScooterRent: async function (customerId: number): Promise<ScooterMessage> {
         const scooterId = HardwareBridge.readScooterId()
-        let scooter = await ScooterApi.read(scooterId)
+        const scooter = await ScooterApi.read(scooterId)
         let returnScooterMessage: ScooterMessage = {
             "message": "Could not return scooter"
         }
@@ -85,7 +85,7 @@ export default {
             scooter.positionY = position.position_y
 
             const start = false
-            this.updateLog(start, customerId, position)
+            this.updateLog(start, customerId, position) // should be after a successful update?
             const updatedScooter = scooter
 
             const statusMessage = await ScooterApi.update(updatedScooter)
@@ -135,8 +135,8 @@ export default {
         scooter.positionX = position.position_x
         scooter.positionY = position.position_y
 
-        let updatedScooter = scooter
-        const statusMessage = await ScooterApi.update(updatedScooter) // skicka till ws istället
+        const updatedScooter = scooter
+        const statusMessage = await ScooterApi.update(updatedScooter)
         return statusMessage.success
     },
 
@@ -190,7 +190,7 @@ export default {
     checkBattery: function (scooter: Scooter): BatteryMessage {
         const batteryLevel = HardwareBridge.checkBattery()
 
-        let battery: BatteryMessage = {
+        const battery: BatteryMessage = {
             "batteryLevel": batteryLevel,
             "needsCharging": batteryLevel < 0.1 && !scooter.charging,
         }
