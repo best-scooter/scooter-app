@@ -1,15 +1,16 @@
 const fs = require('fs')
 
-import ScooterApi from "../model/ScooterApi"
-import HardwareBridge from "../model/HardwareBridge"
+import ScooterApi from "../model/scooterApi.ts"
+import HardwareBridge from "../model/hardwareBridge.ts"
 import StatusMessage from "../model/types/statusMessage.ts";
 import ScooterMessage from "../model/types/scooterMessage.ts";
 import BatteryMessage from "../model/types/batteryMessage.ts";
 import Position from "../model/types/position.ts";
 import Scooter from "../model/types/scooter.ts";
+import hardwareBridge from "../model/hardwareBridge.ts";
 
-const path = "scooter-trips.log"
-const writeFileFlag = { encoding: "utf8", flag: "w", mode: 0o666 }
+const path = process.env.LOG_PATH
+const appendFileFlag = { encoding: "utf8", flag: "a+", mode: 0o666 }
 
 export default {
 
@@ -23,7 +24,7 @@ export default {
     beginScooterRent: async function (customerId: number): Promise<ScooterMessage> {
         const scooterId = HardwareBridge.readScooterId()
         const scooter = await ScooterApi.read(scooterId)
-        const battery = HardwareBridge.checkBattery()
+        const battery = HardwareBridge.checkBattery(scooterId)
         let rentScooterMessage: ScooterMessage = {}
 
         if (
@@ -35,11 +36,9 @@ export default {
             !scooter.disabled
         ) {
             scooter.available = false
-            const position = HardwareBridge.checkPosition()
+            const position = HardwareBridge.checkPosition(scooterId)
             scooter.positionX = position.position_x
             scooter.positionY = position.position_y
-            const start = true
-            this.updateLog(start, customerId, position) // should be after a successful update?
 
             const updatedScooter = scooter
             const statusMessage = await ScooterApi.update(updatedScooter)
@@ -50,11 +49,14 @@ export default {
                     "message": "Scooter " + scooter.id + " successfully rented",
                     "customerId": customerId
                 }
+                const start = true
+                this.updateLog(start, customerId, position)
             }
         } else {
             rentScooterMessage = {
                 "message": "Could not rent scooter"
             }
+            this.updateLogFail(customerId)
         }
 
         return rentScooterMessage
@@ -70,9 +72,7 @@ export default {
     endScooterRent: async function (customerId: number): Promise<ScooterMessage> {
         const scooterId = HardwareBridge.readScooterId()
         const scooter = await ScooterApi.read(scooterId)
-        let returnScooterMessage: ScooterMessage = {
-            "message": "Could not return scooter"
-        }
+        let returnScooterMessage: ScooterMessage = {}
 
         if (!scooter.available) {
             const batteryStatus = this.checkBattery(scooter)
@@ -80,12 +80,10 @@ export default {
 
             scooter.available = true
             scooter.battery = batteryStatus.batteryLevel
-            const position = HardwareBridge.checkPosition()
+            const position = HardwareBridge.checkPosition(scooterId)
             scooter.positionX = position.position_x
             scooter.positionY = position.position_y
 
-            const start = false
-            this.updateLog(start, customerId, position) // should be after a successful update?
             const updatedScooter = scooter
 
             const statusMessage = await ScooterApi.update(updatedScooter)
@@ -95,7 +93,14 @@ export default {
                     "needsCharging": needsCharging,
                     "customerId": customerId
                 }
+                const start = false
+                this.updateLog(start, customerId, position)
             }
+        } else {
+            returnScooterMessage = {
+                "message": "Could not return scooter"
+            }
+            this.updateLogFail(customerId)
         }
 
         return returnScooterMessage
@@ -116,10 +121,19 @@ export default {
         const endString = "Journey end: " + customerId + " - " + position.position_x + " " + position.position_y + " - " + currentDate + " - " + currentTime + "\n"
 
         if (start) {
-            fs.writeFileSync(path, startString, writeFileFlag)
+            fs.appendFileSync(path, startString, appendFileFlag)
         } else if (!start) {
-            fs.writeFileSync(path, endString, writeFileFlag)
+            fs.appendFileSync(path, endString, appendFileFlag)
         }
+    },
+
+    updateLogFail: function (customerId: number): void {
+        const currentDate = HardwareBridge.getDate()
+        const currentTime = HardwareBridge.getTime()
+
+        const string = "ERROR: Customer " + customerId + " attempted to rent/return scooter at " + currentDate + " - " + currentTime + " but failed."
+
+        fs.appendFileSync(path, string, appendFileFlag)
     },
 
     /**
@@ -131,7 +145,7 @@ export default {
         const scooterId = HardwareBridge.readScooterId()
         const scooter = await ScooterApi.read(scooterId)
 
-        const position = HardwareBridge.checkPosition()
+        const position = HardwareBridge.checkPosition(scooterId)
         scooter.positionX = position.position_x
         scooter.positionY = position.position_y
 
@@ -156,7 +170,8 @@ export default {
      * @returns {number} Current speed
      */
     checkSpeed: function (): number {
-        const speed = HardwareBridge.checkSpeedometer()
+        const scooterId = HardwareBridge.readScooterId()
+        const speed = HardwareBridge.checkSpeedometer(scooterId)
         return speed
     },
 
@@ -167,7 +182,7 @@ export default {
      * @returns {Object} Information if the update was successful or not
      */
     setDisabledOrNot: async function (off: boolean): Promise<StatusMessage> {
-        const scooterId = HardwareBridge.readScooterId()
+        const scooterId = hardwareBridge.readScooterId()
         const scooter = await ScooterApi.read(scooterId)
 
         if (off) {
@@ -188,7 +203,7 @@ export default {
      * @returns {Object} Information about battery status
      */
     checkBattery: function (scooter: Scooter): BatteryMessage {
-        const batteryLevel = HardwareBridge.checkBattery()
+        const batteryLevel = HardwareBridge.checkBattery(scooter.id)
 
         const battery: BatteryMessage = {
             "batteryLevel": batteryLevel,
@@ -235,9 +250,11 @@ export default {
         if (shouldCharge) {
             scooter.charging = true
             scooter.available = false
+            HardwareBridge.lampOff(scooterId)
         } else if (!shouldCharge) {
             scooter.charging = false
             scooter.available = true
+            HardwareBridge.lampOn(scooterId)
         }
 
         const updatedScooter = scooter

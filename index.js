@@ -1,8 +1,8 @@
 import Websocket from 'ws'
 import ScooterUtils from './controller/ScooterUtils'
 
-const url = "wss://localhost:3000" // temporarily
-const protocol = "scooter" // temporarily
+const url = "wss://localhost:3000" // temporarily for development reasons
+const protocol = "scooter" // temporarily for development reasons
 const wsServer = new Websocket(url, protocol)
 
 wsServer.onopen = (event) => {
@@ -20,6 +20,7 @@ wsServer.onmessage = (event) => {
         case "endRent":
             customerId = 0 // get from message
             ScooterUtils.endScooterRent(customerId)
+            // behöver skicka tillbaka varning om laddning?
             break;
         case "updatePosition":
             ScooterUtils.updatePosition()

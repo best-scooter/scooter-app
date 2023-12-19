@@ -1,4 +1,5 @@
-import ScooterUtils from "../controller/ScooterUtils";
+import ScooterUtils from "../controller/scooterUtils";
+import fakeData from "./fakeData";
 import FakeData from "./fakeData";
 const fs = require('fs')
 require('jest-fetch-mock').enableMocks();
@@ -101,8 +102,11 @@ test('Fail to rent a scooter. Scooter is in service mode and not available.', as
     const expected = {
         "message": "Could not rent scooter"
     }
+    const log = fs.readFileSync(path, readFileFlag)
+    const regEx = /^(ERROR: Customer 2 attempted to return scooter)?/
 
     expect(result.message).toEqual(expected.message)
+    expect(log).toMatch(regEx)
     expect(fetch.mock.calls.length).toEqual(1)
     expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
 })
@@ -190,8 +194,11 @@ test('Fail return a scooter. Already available', async () => {
     const expected = {
         "message": "Could not return scooter",
     }
+    const log = fs.readFileSync(path, readFileFlag)
+    const regEx = /^(ERROR: Customer 2 attempted to return scooter)?/
 
     expect(result.message).toEqual(expected.message)
+    expect(log).toMatch(regEx)
     expect(fetch.mock.calls.length).toEqual(1)
     expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
 })
@@ -222,6 +229,16 @@ test('Log the end of a journey', () => {
     ScooterUtils.updateLog(start, customerId, position)
     const result = fs.readFileSync(path, readFileFlag)
     const regEx = /^(Journey end: 1 - 59.334591 18.063240 - )?/
+
+    expect(result).toMatch(regEx)
+})
+
+test('Log a failed rent/return of scooter', () => {
+    const customerId = 1
+    ScooterUtils.updateLogFail(customerId)
+
+    const result = fs.readFileSync(path, readFileFlag)
+    const regEx = /^(ERROR: Customer 1 attempted to return scooter)?/
 
     expect(result).toMatch(regEx)
 })
@@ -533,6 +550,7 @@ test('Change to charging and not available', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
+    fakeData.fakeLampOn()
 
     fetch
         .mockResponseOnce(JSON.stringify(
@@ -576,6 +594,7 @@ test('Change to not charging and available', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
+    fakeData.fakeLampOff()
 
     fetch
         .mockResponseOnce(JSON.stringify(

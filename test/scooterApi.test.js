@@ -1,5 +1,5 @@
 require('jest-fetch-mock').enableMocks();
-import ScooterApi from "../model/ScooterApi";
+import ScooterApi from "../model/scooterApi";
 
 beforeEach(() => {
     fetchMock.resetMocks()

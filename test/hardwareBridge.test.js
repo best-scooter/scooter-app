@@ -1,8 +1,9 @@
-import HardwareBridge from "../model/HardwareBridge";
+import HardwareBridge from "../model/hardwareBridge";
+import fakeData from "./fakeData";
 import FakeData from "./fakeData";
 const fs = require('fs')
 
-const basePath = "model/hardware/"
+const basePath = process.env.HARDWARE_PATH
 const readFileFlag = { encoding: 'utf8', flag: 'r' }
 const writeFileFlag = { encoding: "utf8", flag: "w", mode: 0o666 }
 
@@ -33,47 +34,61 @@ test('Read Scooter ID', () => {
 
 test('Check a startposition', () => {
     const fakeStartPosition = FakeData.createFakeStartPosition()
-    const result = HardwareBridge.checkPosition()
+    const scooterId = 1
+    const result = HardwareBridge.checkPosition(scooterId)
 
     expect(result).toEqual(fakeStartPosition)
 })
 
 test('Check that the current position updates', () => {
     const fakeStartPosition = FakeData.createFakeStartPosition()
-    const resultStartPosition = HardwareBridge.checkPosition()
+    const scooterId = 1
+    const resultStartPosition = HardwareBridge.checkPosition(scooterId)
 
-    const fakeUpdatedPosition = FakeData.updateFakePosition()
-    const resultUpdatedPosition = HardwareBridge.checkPosition()
+    const fakeUpdatedPosition = FakeData.updateFakePosition(scooterId)
+    const resultUpdatedPosition = HardwareBridge.checkPosition(scooterId)
 
-    expect(fakeStartPosition).toEqual(resultStartPosition)
-    expect(fakeUpdatedPosition).toEqual(resultUpdatedPosition)
+    expect(resultStartPosition).toEqual(fakeStartPosition)
+    expect(resultUpdatedPosition).toEqual(fakeUpdatedPosition)
     expect(resultStartPosition).not.toEqual(resultUpdatedPosition)
 })
 
 test('Check battery level', () => {
     const fakeBatteryLevel = FakeData.fakeBatteryLevel()
-    const resultBattery = HardwareBridge.checkBattery()
+    const scooterId = 1
+    const resultBattery = HardwareBridge.checkBattery(scooterId)
 
-    expect(fakeBatteryLevel).toEqual(resultBattery)
+    expect(resultBattery).toEqual(fakeBatteryLevel)
 })
 
 test('Cheeck speed', () => {
     const fakeSpeed = FakeData.fakeSpeed()
-    const resultSpeed = HardwareBridge.checkSpeedometer()
+    const scooterId = 1
+    const resultSpeed = HardwareBridge.checkSpeedometer(scooterId)
 
     expect(fakeSpeed).toEqual(resultSpeed)
 })
 
 test('Lamp on', () => {
-    HardwareBridge.lampOn()
-    const lamp = fs.readFileSync(basePath + "/redLight", readFileFlag)
+    fakeData.fakeLampOff()
+    const scooterId = 1
+    HardwareBridge.lampOn(scooterId)
+
+    const allLampsString = fs.readFileSync(basePath + "/redLight", readFileFlag)
+    const allLamps = JSON.parse(allLampsString)
+    const lamp = allLamps[scooterId]
 
     expect(lamp).toEqual("on")
 })
 
 test('Lamp off', () => {
-    HardwareBridge.lampOff()
-    const lamp = fs.readFileSync(basePath + "/redLight", readFileFlag)
+    fakeData.fakeLampOn()
+    const scooterId = 1
+    HardwareBridge.lampOff(scooterId)
+
+    const allLampsString = fs.readFileSync(basePath + "/redLight", readFileFlag)
+    const allLamps = JSON.parse(allLampsString)
+    const lamp = allLamps[scooterId]
 
     expect(lamp).toEqual("off")
 })

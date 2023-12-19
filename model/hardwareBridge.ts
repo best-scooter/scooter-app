@@ -20,13 +20,10 @@ export default {
      * 
      * @returns {Object} The information about latitude (position_x) and longitude (position_y)
      */
-    checkPosition: function (): Position {
-        const position_x_y = fs.readFileSync(basePath + "gps", readFileFlag)
-        const positionArray = position_x_y.split(", ")
-        const position = {
-            "position_x": Number(positionArray[0]),
-            "position_y": Number(positionArray[1])
-        }
+    checkPosition: function (scooterId: number): Position {
+        const allPositionsString = fs.readFileSync(basePath + "gps", readFileFlag)
+        const allPositions = JSON.parse(allPositionsString)
+        const position = allPositions[scooterId]
 
         return position
     },
@@ -36,9 +33,12 @@ export default {
      * 
      * @returns {number} Battery level
      */
-    checkBattery: function (): number {
-        const batteryLevel = fs.readFileSync(basePath + "battery", readFileFlag)
-        return parseFloat(batteryLevel)
+    checkBattery: function (scooterId: number): number {
+        const allBatteriesString = fs.readFileSync(basePath + "battery", readFileFlag)
+        const allBatteries = JSON.parse(allBatteriesString)
+        const batteryLevel = allBatteries[scooterId]
+
+        return batteryLevel
     },
 
     /**
@@ -46,23 +46,33 @@ export default {
      * 
      * @returns {number} Current speed
      */
-    checkSpeedometer: function (): number {
-        const speed = fs.readFileSync(basePath + "speedometer", readFileFlag)
-        return Number(speed)
+    checkSpeedometer: function (scooterId: number): number {
+        const allSpeedsString = fs.readFileSync(basePath + "speedometer", readFileFlag)
+        const allSpeeds = JSON.parse(allSpeedsString)
+        const speed = allSpeeds[scooterId]
+        return speed
     },
 
     /**
      * Change the fake lamp to on, if the scooter is being charged to show it is not available
      */
-    lampOn: function (): void {
-        fs.writeFileSync(basePath + "redLight", "on", writeFileFlag)
+    lampOn: function (scooterId: number): void {
+        const allLampsString = fs.readFileSync(basePath + "redLight", readFileFlag)
+        const allLamps = JSON.parse(allLampsString)
+        allLamps[scooterId] = "on"
+
+        fs.writeFileSync(basePath + "redLight", JSON.stringify(allLamps), writeFileFlag)
     },
 
     /**
      * Change the fake lamp to off, if the scooter is not being charged to show it is available
      */
-    lampOff: function (): void {
-        fs.writeFileSync(basePath + "redLight", "off", writeFileFlag)
+    lampOff: function (scooterId: number): void {
+        const allLampsString = fs.readFileSync(basePath + "redLight", readFileFlag)
+        const allLamps = JSON.parse(allLampsString)
+        allLamps[scooterId] = "off"
+
+        fs.writeFileSync(basePath + "redLight", JSON.stringify(allLamps), writeFileFlag)
     },
 
     /**
