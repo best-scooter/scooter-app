@@ -9,6 +9,8 @@ const token = ScooterApi.token(scooterId)
 
 // TODO: Ändra i simulation.env: LOG_PATH, HARDWARE_PATH, WS_MOCK
 // TODO: fixa så att wsUrl och mockUrl är env variabler
+// TODO: Uppdatera Dockerfile
+// TODO: Lägga till test för token i ScooterApi
 
 /**
  * Main websocket client.

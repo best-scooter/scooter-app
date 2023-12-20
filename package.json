@@ -4,7 +4,6 @@
   "description": "scooter-stuff",
   "main": "index.js",
   "scripts": {
-    "babel": "node babel --presets @babel/preset-typescript index.ts",
     "test": "jest --coverage --setupFiles dotenv/config",
     "build": "tsc --build",
     "clean": "tsc --build --clean",

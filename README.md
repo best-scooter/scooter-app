@@ -103,4 +103,4 @@ Cykelns program kommer endast att läsa av datan i filerna via hardwareBridge. E
 
 #### scooterAPI
 
-Finns stöd för att göra GET request för en enskild cykel och PUT för en enskild cykel.
+Finns stöd för att göra GET request för en enskild cykel, PUT för en enskild cykel och POST för att få en cykel-token.
