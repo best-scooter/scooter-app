@@ -8,13 +8,31 @@ Program som är tänkt att att köras i varje simulerad cykel och styra/övervak
 
 Kör alla enhetstester.
 
+### npm run build
+
+Kompilerar Typescript-filer till JavaScript-filer.
+
+### npm run clean
+
+Rensar bort de kompilerade JavaScript-filerna.
+
 ### npm run lint
 
 Kör lintern.
 
+### npm run dev
+
+Kör applikationen i development mode.
+
+### npm run sim
+
+Kör applikationen i simulation mode.
+
+## Filstruktur
+
 ## Index
 
-Består av en websocket-klient för att ta emot meddelanden.
+Består av två websocket-klienter för att ta emot och skicka meddelanden mellan dels ws-server och mock-service.
 
 ## Controller
 

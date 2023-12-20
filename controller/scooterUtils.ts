@@ -1,13 +1,13 @@
 const fs = require('fs')
 
-import ScooterApi from "../model/scooterApi.ts"
-import HardwareBridge from "../model/hardwareBridge.ts"
-import StatusMessage from "../model/types/statusMessage.ts";
-import ScooterMessage from "../model/types/scooterMessage.ts";
-import BatteryMessage from "../model/types/batteryMessage.ts";
-import Position from "../model/types/position.ts";
-import Scooter from "../model/types/scooter.ts";
-import hardwareBridge from "../model/hardwareBridge.ts";
+import ScooterApi from "../model/scooterApi"
+import HardwareBridge from "../model/hardwareBridge"
+import StatusMessage from "../model/types/statusMessage";
+import ScooterMessage from "../model/types/scooterMessage";
+import BatteryMessage from "../model/types/batteryMessage";
+import Position from "../model/types/position";
+import Scooter from "../model/types/scooter";
+import hardwareBridge from "../model/hardwareBridge";
 
 const path = process.env.LOG_PATH
 const appendFileFlag = { encoding: "utf8", flag: "a+", mode: 0o666 }
@@ -21,7 +21,7 @@ export default {
      * @param {number} customerId Customer ID
      * @returns {Object} Information regarding if the scooter was successfully rented
      */
-    beginScooterRent: async function (customerId: number): Promise<ScooterMessage> {
+    beginScooterRent: async function (customerId: number): Promise<ScooterMessage> { // TODO: stäm av med David. vad uppdaterar han?
         const scooterId = HardwareBridge.readScooterId()
         const scooter = await ScooterApi.read(scooterId)
         const battery = HardwareBridge.checkBattery(scooterId)
@@ -37,8 +37,8 @@ export default {
         ) {
             scooter.available = false
             const position = HardwareBridge.checkPosition(scooterId)
-            scooter.positionX = position.position_x
-            scooter.positionY = position.position_y
+            scooter.positionX = position.x
+            scooter.positionY = position.y
 
             const updatedScooter = scooter
             const statusMessage = await ScooterApi.update(updatedScooter)
@@ -81,8 +81,8 @@ export default {
             scooter.available = true
             scooter.battery = batteryStatus.batteryLevel
             const position = HardwareBridge.checkPosition(scooterId)
-            scooter.positionX = position.position_x
-            scooter.positionY = position.position_y
+            scooter.positionX = position.x
+            scooter.positionY = position.y
 
             const updatedScooter = scooter
 
@@ -117,8 +117,8 @@ export default {
         const currentDate = HardwareBridge.getDate()
         const currentTime = HardwareBridge.getTime()
 
-        const startString = "Journey start: " + customerId + " - " + position.position_x + " " + position.position_y + " - " + currentDate + " - " + currentTime + "\n"
-        const endString = "Journey end: " + customerId + " - " + position.position_x + " " + position.position_y + " - " + currentDate + " - " + currentTime + "\n"
+        const startString = "Journey start: " + customerId + " - " + position.x + " " + position.y + " - " + currentDate + " - " + currentTime + "\n"
+        const endString = "Journey end: " + customerId + " - " + position.x + " " + position.y + " - " + currentDate + " - " + currentTime + "\n"
 
         if (start) {
             fs.appendFileSync(path, startString, appendFileFlag)
@@ -146,8 +146,8 @@ export default {
         const scooter = await ScooterApi.read(scooterId)
 
         const position = HardwareBridge.checkPosition(scooterId)
-        scooter.positionX = position.position_x
-        scooter.positionY = position.position_y
+        scooter.positionX = position.x
+        scooter.positionY = position.y
 
         const updatedScooter = scooter
         const statusMessage = await ScooterApi.update(updatedScooter)

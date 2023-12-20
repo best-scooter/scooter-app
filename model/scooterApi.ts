@@ -69,6 +69,41 @@ export default {
         return statusMessage
     },
 
+    /**
+     * POST in order to get a scooter token.
+     * @param {number} scooterId 
+     * @returns {string} A token
+     */
+    token: async function (scooterId: number): Promise<String> {
+        const backendServer = this.getEnvVariable("BACKEND")
+        const version = this.getEnvVariable("VERSION")
+        const url = backendServer + version + "/scooter/" + "token";
+        const tokenBody = {
+            scooterId: scooterId,
+            password: scooterId
+        }
+
+        const token = await fetch(url, {
+            body: JSON.stringify(tokenBody),
+            headers: {
+                "content-type": "application/json"
+            },
+            method: "POST"
+        })
+            .then((response) => {
+                if (response.status == 200) {
+                    return response.json()
+                }
+            })
+            .then((result) => {
+                if (result !== undefined) {
+                    return result.data.token
+                }
+            })
+
+        return token
+    },
+
     getEnvVariable: function (name: string): string {
         const variable = process.env[name]
 
