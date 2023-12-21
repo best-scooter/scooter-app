@@ -45,7 +45,7 @@ wsClient.onmessage = async function (event: string) {
             const available = await ScooterUtils.checkAvailable()
             if (available) {
                 ScooterUtils.beginScooterRent(customerId)
-            } else if (msg.timeEnded !== undefined) {
+            } else if (msg.timeEnded !== undefined) { // TODO: swap
                 ScooterUtils.endScooterRent(customerId)
                 // TODO: Eventuellt lägga till underlag för laddning ifall msg.parkedCharging implementeras
             }
@@ -68,6 +68,8 @@ wsClient.onmessage = async function (event: string) {
 /**
  * Mock-service client.
  */
+
+// TODO: if env == sim
 const mockUrl = "wss://localhost:3000" // temporarily for development reasons TODO: beroende på miljö
 const mockClient = new WebSocketClient(mockUrl, token)
 
@@ -106,6 +108,8 @@ mockClient.onmessage = function (event: string) {
             wsClient.send(hardwareMsg)
     }
 };
+
+// Flytta hardware update to 
 
 //mockService.on((message) => {
 //    WriteBatteryFileFunction(message.batteryLevel);

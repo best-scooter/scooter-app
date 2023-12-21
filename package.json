@@ -2,9 +2,9 @@
   "name": "scooter-app",
   "version": "0.0.1",
   "description": "scooter-stuff",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "test": "jest --coverage --setupFiles dotenv/config",
+    "test": "jest --coverage",
     "build": "tsc --build",
     "clean": "tsc --build --clean",
     "lint": "npx eslint .",

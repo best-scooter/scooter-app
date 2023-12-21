@@ -30,8 +30,8 @@ test('Successfully GET information about a single scooter', async () => {
                     connected: false
                 }
             ]
-        }, 200
-    ))
+        }
+    ), { status: 200 })
 
     const result = await ScooterApi.read(scooterId)
 
@@ -135,6 +135,41 @@ test('Fail to PUT (update) information about a single scooter. Wrong identity.',
     expect(result.message).toBe(expected.message)
     expect(fetch.mock.calls.length).toEqual(1)
     expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
+})
+
+test('Successfully get (POST) a scooter token', async () => {
+    const scooterId = 1
+    const backendServer = process.env.BACKEND
+    const version = process.env.VERSION
+
+    fetch.mockResponseOnce(JSON.stringify(
+        {
+            data: {
+                token: "tokenstring",
+                scooterId: scooterId
+            }
+        }
+    ), { status: 201 })
+
+    const result = await ScooterApi.token(scooterId)
+
+    expect(result).toBe("tokenstring")
+    expect(fetch.mock.calls.length).toEqual(1)
+    expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + "token")
+})
+
+test('Fail to get (POST) a scooter token', async () => {
+    const scooterId = 1
+    const backendServer = process.env.BACKEND
+    const version = process.env.VERSION
+
+    fetch.mockResponseOnce(JSON.stringify(undefined), { status: 409 })
+
+    const result = await ScooterApi.token(scooterId)
+
+    expect(result).toBe(undefined)
+    expect(fetch.mock.calls.length).toEqual(1)
+    expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + "token")
 })
 
 test('Successfully get environment variable as string', () => {
