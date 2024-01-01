@@ -12,7 +12,9 @@
     "include": [
       "controller/**/*",
       "model/**/*",
-      "index.ts"
+      "index.ts",
+      "hardwareTest.ts",
+      "fakeDataTest.ts"
     ],
     "exclude": [
         "test/**/*"

@@ -9,7 +9,8 @@
     "clean": "tsc --build --clean",
     "lint": "npx eslint .",
     "dev": "NODE_ENV=development node ./dist",
-    "sim": "NODE_ENV=simulation node ./dist"
+    "sim": "NODE_ENV=simulation node ./dist",
+    "docker:build": "npm run build && docker build . --no-cache -t best-scooter/scooter-app:1.0"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
   "homepage": "https://github.com/best-scooter/scooter-app#readme",
   "dependencies": {
     "dotenv": "^16.3.1",
+    "dotenv-expand": "^10.0.0",
     "jest-fetch-mock": "^3.0.3",
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",

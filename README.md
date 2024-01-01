@@ -28,6 +28,10 @@ Kör applikationen i development mode.
 
 Kör applikationen i simulation mode.
 
+### npm run docker:build
+
+Kör först scriptet "npm run build" och bygger sedan docker-imagen.
+
 ## Filstruktur
 
 ## Index

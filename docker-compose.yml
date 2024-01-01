@@ -1,0 +1,14 @@
+services:
+  scooters:
+    image: best-scooter/scooter-app:1.0
+    volumes:
+      - hardware:/scooter-app/model/hardware/:ro
+    environment:
+      - NODE_ENV=simulation
+    deploy:
+      mode: replicated
+      replicas: 50
+
+volumes:
+  hardware:
+  
