@@ -1,13 +1,19 @@
 import ScooterUtils from "../controller/scooterUtils";
-import fakeData from "./fakeData";
 import FakeData from "./fakeData";
 const fs = require('fs')
 require('jest-fetch-mock').enableMocks();
 
-const path = "scooter-trips.log"
+const logPath = process.env.LOG_PATH
+const hardwarePath = process.env.HARDWARE_PATH
 const readFileFlag = { encoding: 'utf8', flag: 'r' }
 const writeFileFlag = { encoding: "utf8", flag: "w", mode: 0o666 }
-const originalLog = fs.readFileSync(path, readFileFlag)
+
+const originalLog = fs.readFileSync(logPath, readFileFlag)
+const originalBattery = fs.readFileSync(hardwarePath + "battery", readFileFlag)
+const originalGPS = fs.readFileSync(hardwarePath + "gps", readFileFlag)
+const originalSpeed = fs.readFileSync(hardwarePath + "speedometer", readFileFlag)
+const originalLamp = fs.readFileSync(hardwarePath + "redLight", readFileFlag)
+
 
 beforeEach(() => {
     fetchMock.resetMocks()
@@ -16,14 +22,18 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-    fs.writeFileSync(path, originalLog, writeFileFlag)
+    fs.writeFileSync(logPath, originalLog, writeFileFlag)
+    fs.writeFileSync(hardwarePath + "battery", originalBattery, writeFileFlag)
+    fs.writeFileSync(hardwarePath + "gps", originalGPS, writeFileFlag)
+    fs.writeFileSync(hardwarePath + "speedometer", originalSpeed, writeFileFlag)
+    fs.writeFileSync(hardwarePath + "redLight", originalLamp, writeFileFlag)
 })
 
 test('Successfully rent a scooter', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
-    const customerId = 2
+    const customerId = 1
     FakeData.fakeBatteryLevel51()
     FakeData.fakeStockholmPosition()
 
@@ -57,8 +67,8 @@ test('Successfully rent a scooter', async () => {
         "message": "Scooter " + scooterId + " successfully rented",
         "customerId": customerId
     }
-    const log = fs.readFileSync(path, readFileFlag)
-    const regEx = /^(Journey start: 2 - 59.334591 18.063240 - )?/
+    const log = fs.readFileSync(logPath, readFileFlag)
+    const regEx = /^(Journey start: Customer 1 - 59.334591 18.063240 - )?/
 
     expect(result.rentedScooterId).toEqual(expected.rentedScooterId)
     expect(result.message).toEqual(expected.message)
@@ -102,7 +112,7 @@ test('Fail to rent a scooter. Scooter is in service mode and not available.', as
     const expected = {
         "message": "Could not rent scooter"
     }
-    const log = fs.readFileSync(path, readFileFlag)
+    const log = fs.readFileSync(logPath, readFileFlag)
     const regEx = /^(ERROR: Customer 2 attempted to return scooter)?/
 
     expect(result.message).toEqual(expected.message)
@@ -115,7 +125,7 @@ test('Successfully return a scooter', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
-    const customerId = 2
+    const customerId = 3
     FakeData.fakeBatteryLevel51()
     FakeData.fakeStockholmPosition()
 
@@ -149,8 +159,8 @@ test('Successfully return a scooter', async () => {
         "needsCharging": false,
         "customerId": customerId
     }
-    const log = fs.readFileSync(path, readFileFlag)
-    const regEx = /^(Journey end: 2 - 59.334591 18.063240 - )?/
+    const log = fs.readFileSync(logPath, readFileFlag)
+    const regEx = /^(Journey end: Customer 3 - 59.334591 18.063240 - )?/
 
     expect(result.message).toEqual(expected.message)
     expect(result.needsCharging).toEqual(expected.needsCharging)
@@ -164,7 +174,7 @@ test('Fail return a scooter. Already available', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
-    const customerId = 2
+    const customerId = 4
     FakeData.fakeBatteryLevel51()
     FakeData.fakeStockholmPosition()
 
@@ -194,8 +204,8 @@ test('Fail return a scooter. Already available', async () => {
     const expected = {
         "message": "Could not return scooter",
     }
-    const log = fs.readFileSync(path, readFileFlag)
-    const regEx = /^(ERROR: Customer 2 attempted to return scooter)?/
+    const log = fs.readFileSync(logPath, readFileFlag)
+    const regEx = /^(ERROR: Customer 4 attempted to rent\/return scooter)?/
 
     expect(result.message).toEqual(expected.message)
     expect(log).toMatch(regEx)
@@ -205,40 +215,40 @@ test('Fail return a scooter. Already available', async () => {
 
 test('Log the start of a journey', () => {
     const start = true
-    const customerId = 1
+    const customerId = 5
     const position = {
-        position_x: 59.334591,
-        position_y: 18.063240
+        x: 59.334591,
+        y: 18.063240
     }
 
     ScooterUtils.updateLog(start, customerId, position)
-    const result = fs.readFileSync(path, readFileFlag)
-    const regEx = /^(Journey start: 1 - 59.334591 18.063240 - )?/
+    const result = fs.readFileSync(logPath, readFileFlag)
+    const regEx = /^(Journey start: Customer 5 - 59.334591 18.063240 - )?/
 
     expect(result).toMatch(regEx)
 })
 
 test('Log the end of a journey', () => {
     const start = false
-    const customerId = 1
+    const customerId = 6
     const position = {
-        position_x: 59.334591,
-        position_y: 18.063240
+        x: 59.334591,
+        y: 18.063240
     }
 
     ScooterUtils.updateLog(start, customerId, position)
-    const result = fs.readFileSync(path, readFileFlag)
-    const regEx = /^(Journey end: 1 - 59.334591 18.063240 - )?/
+    const result = fs.readFileSync(logPath, readFileFlag)
+    const regEx = /^(Journey end: Customer 6 - 59.334591 18.063240 - )?/
 
     expect(result).toMatch(regEx)
 })
 
 test('Log a failed rent/return of scooter', () => {
-    const customerId = 1
+    const customerId = 7
     ScooterUtils.updateLogFail(customerId)
 
-    const result = fs.readFileSync(path, readFileFlag)
-    const regEx = /^(ERROR: Customer 1 attempted to return scooter)?/
+    const result = fs.readFileSync(logPath, readFileFlag)
+    const regEx = /^(ERROR: Customer 7 attempted to rent\/return scooter)?/
 
     expect(result).toMatch(regEx)
 })
@@ -550,7 +560,7 @@ test('Change to charging and not available', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
-    fakeData.fakeLampOn()
+    FakeData.fakeLampOn()
 
     fetch
         .mockResponseOnce(JSON.stringify(
@@ -594,7 +604,7 @@ test('Change to not charging and available', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
-    fakeData.fakeLampOff()
+    FakeData.fakeLampOff()
 
     fetch
         .mockResponseOnce(JSON.stringify(

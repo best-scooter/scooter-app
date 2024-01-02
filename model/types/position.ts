@@ -1,6 +1,6 @@
 type Position = {
-    x: number;
     y: number;
+    x: number;
 }
 
 export default Position; 

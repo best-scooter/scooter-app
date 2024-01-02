@@ -1,5 +1,6 @@
 import Position from "./types/position"
-const basePath = "model/hardware/"
+import ScooterApi from "./scooterApi"
+const hardwarePath = ScooterApi.getEnvVariable("HARDWARE_PATH")
 const readFileFlag = { encoding: 'utf8', flag: 'r' }
 const writeFileFlag = { encoding: "utf8", flag: "w", mode: 0o666 }
 const fs = require('fs')
@@ -11,7 +12,7 @@ export default {
      * @returns {number} Scooter ID
      */
     readScooterId: function (): number {
-        const scooterId = process.env.SCOOTER_ID
+        const scooterId = ScooterApi.getEnvVariable("SCOOTER_ID")
         return Number(scooterId)
     },
 
@@ -21,11 +22,15 @@ export default {
      * @returns {Object} The information about latitude (position_x) and longitude (position_y)
      */
     checkPosition: function (scooterId: number): Position {
-        const allPositionsString = fs.readFileSync(basePath + "gps", readFileFlag)
-        const allPositions = JSON.parse(allPositionsString)
-        const position = allPositions[scooterId]
+        try {
+            const allPositionsString = fs.readFileSync(hardwarePath + "gps", readFileFlag)
+            const allPositions = JSON.parse(allPositionsString)
+            const position = allPositions[scooterId]
 
-        return position
+            return position
+        } catch (error) {
+            throw new Error(error)
+        }
     },
 
     /**
@@ -34,11 +39,15 @@ export default {
      * @returns {number} Battery level
      */
     checkBattery: function (scooterId: number): number {
-        const allBatteriesString = fs.readFileSync(basePath + "battery", readFileFlag)
-        const allBatteries = JSON.parse(allBatteriesString)
-        const batteryLevel = allBatteries[scooterId]
+        try {
+            const allBatteriesString = fs.readFileSync(hardwarePath + "battery", readFileFlag)
+            const allBatteries = JSON.parse(allBatteriesString)
+            const batteryLevel = allBatteries[scooterId]
 
-        return batteryLevel
+            return batteryLevel
+        } catch (error) {
+            throw new Error(error)
+        }
     },
 
     /**
@@ -47,32 +56,44 @@ export default {
      * @returns {number} Current speed
      */
     checkSpeedometer: function (scooterId: number): number {
-        const allSpeedsString = fs.readFileSync(basePath + "speedometer", readFileFlag)
-        const allSpeeds = JSON.parse(allSpeedsString)
-        const speed = allSpeeds[scooterId]
-        return speed
+        try {
+            const allSpeedsString = fs.readFileSync(hardwarePath + "speedometer", readFileFlag)
+            const allSpeeds = JSON.parse(allSpeedsString)
+            const speed = allSpeeds[scooterId]
+            return speed
+        } catch (error) {
+            throw new Error(error)
+        }
     },
 
     /**
      * Change the fake lamp to on, if the scooter is being charged to show it is not available
      */
     lampOn: function (scooterId: number): void {
-        const allLampsString = fs.readFileSync(basePath + "redLight", readFileFlag)
-        const allLamps = JSON.parse(allLampsString)
-        allLamps[scooterId] = "on"
+        try {
+            const allLampsString = fs.readFileSync(hardwarePath + "redLight", readFileFlag)
+            const allLamps = JSON.parse(allLampsString)
+            allLamps[scooterId] = "on"
 
-        fs.writeFileSync(basePath + "redLight", JSON.stringify(allLamps), writeFileFlag)
+            fs.writeFileSync(hardwarePath + "redLight", JSON.stringify(allLamps), writeFileFlag)
+        } catch (error) {
+            throw new Error(error)
+        }
     },
 
     /**
      * Change the fake lamp to off, if the scooter is not being charged to show it is available
      */
     lampOff: function (scooterId: number): void {
-        const allLampsString = fs.readFileSync(basePath + "redLight", readFileFlag)
-        const allLamps = JSON.parse(allLampsString)
-        allLamps[scooterId] = "off"
+        try {
+            const allLampsString = fs.readFileSync(hardwarePath + "redLight", readFileFlag)
+            const allLamps = JSON.parse(allLampsString)
+            allLamps[scooterId] = "off"
 
-        fs.writeFileSync(basePath + "redLight", JSON.stringify(allLamps), writeFileFlag)
+            fs.writeFileSync(hardwarePath + "redLight", JSON.stringify(allLamps), writeFileFlag)
+        } catch (error) {
+            throw new Error(error)
+        }
     },
 
     /**

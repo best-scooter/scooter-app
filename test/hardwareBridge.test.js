@@ -53,6 +53,56 @@ test('Check that the current position updates', () => {
     expect(resultStartPosition).not.toEqual(resultUpdatedPosition)
 })
 
+test('checkPosition throws error.', () => {
+    const scooterId = "test"
+
+    function hardwareError() {
+        HardwareBridge.checkPosition(scooterId)
+    }
+
+    expect(hardwareError).toThrow()
+})
+
+test('checkBattery throws error.', () => {
+    const scooterId = "test"
+
+    function hardwareError() {
+        HardwareBridge.checkBattery(scooterId)
+    }
+
+    expect(hardwareError).toThrow()
+})
+
+test('checkSpeedometer throws error.', () => {
+    const scooterId = "test"
+
+    function hardwareError() {
+        HardwareBridge.checkSpeedometer(scooterId)
+    }
+
+    expect(hardwareError).toThrow()
+})
+
+test('lampOn throws error.', () => {
+    const scooterId = "test"
+
+    function hardwareError() {
+        HardwareBridge.lampOn(scooterId)
+    }
+
+    expect(hardwareError).toThrow()
+})
+
+test('lampOff throws error.', () => {
+    const scooterId = "test"
+
+    function hardwareError() {
+        HardwareBridge.lampOff(scooterId)
+    }
+
+    expect(hardwareError).toThrow()
+})
+
 test('Check battery level', () => {
     const fakeBatteryLevel = FakeData.fakeBatteryLevel()
     const scooterId = 1

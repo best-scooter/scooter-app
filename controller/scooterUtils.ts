@@ -9,7 +9,7 @@ import Position from "../model/types/position";
 import Scooter from "../model/types/scooter";
 import hardwareBridge from "../model/hardwareBridge";
 
-const path = process.env.LOG_PATH
+const logPath = ScooterApi.getEnvVariable("LOG_PATH")
 const appendFileFlag = { encoding: "utf8", flag: "a+", mode: 0o666 }
 
 export default {
@@ -21,7 +21,7 @@ export default {
      * @param {number} customerId Customer ID
      * @returns {Object} Information regarding if the scooter was successfully rented
      */
-    beginScooterRent: async function (customerId: number): Promise<ScooterMessage> { // TODO: stäm av med David. vad uppdaterar han?
+    beginScooterRent: async function (customerId: number): Promise<ScooterMessage> {
         const scooterId = HardwareBridge.readScooterId()
         const scooter = await ScooterApi.read(scooterId)
         const battery = HardwareBridge.checkBattery(scooterId)
@@ -117,13 +117,13 @@ export default {
         const currentDate = HardwareBridge.getDate()
         const currentTime = HardwareBridge.getTime()
 
-        const startString = "Journey start: " + customerId + " - " + position.x + " " + position.y + " - " + currentDate + " - " + currentTime + "\n"
-        const endString = "Journey end: " + customerId + " - " + position.x + " " + position.y + " - " + currentDate + " - " + currentTime + "\n"
+        const startString = "Journey start: Customer " + customerId + " - " + position.x + " " + position.y + " - " + currentDate + " - " + currentTime + "\n"
+        const endString = "Journey end: Customer " + customerId + " - " + position.x + " " + position.y + " - " + currentDate + " - " + currentTime + "\n"
 
         if (start) {
-            fs.appendFileSync(path, startString, appendFileFlag)
+            fs.appendFileSync(logPath, startString, appendFileFlag)
         } else if (!start) {
-            fs.appendFileSync(path, endString, appendFileFlag)
+            fs.appendFileSync(logPath, endString, appendFileFlag)
         }
     },
 
@@ -131,9 +131,9 @@ export default {
         const currentDate = HardwareBridge.getDate()
         const currentTime = HardwareBridge.getTime()
 
-        const string = "ERROR: Customer " + customerId + " attempted to rent/return scooter at " + currentDate + " - " + currentTime + " but failed."
+        const string = "ERROR: Customer " + customerId + " attempted to rent/return scooter at " + currentDate + " - " + currentTime + " but failed." + "\n"
 
-        fs.appendFileSync(path, string, appendFileFlag)
+        fs.appendFileSync(logPath, string, appendFileFlag)
     },
 
     /**

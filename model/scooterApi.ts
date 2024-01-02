@@ -91,7 +91,6 @@ export default {
             method: "POST"
         })
             .then((response) => {
-                console.log(response)
                 if (response.status == 201) {
                     return response.json()
                 }
