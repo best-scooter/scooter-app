@@ -20,7 +20,6 @@ const updateTime = Number(ScooterApi.getEnvVariable("HARDWARE_UPDATE"))
  */
 const wsUrl = ScooterApi.getEnvVariable("WS_URL")
 const wsClient = new WebSocketClient()
-let wsConnection: connection
 
 wsClient.on('connectFailed', function(error: any) {
     console.error("WebSocket connect error:", error)
