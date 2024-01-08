@@ -89,7 +89,7 @@ export default {
         const url = backendServer + version + "/scooter/" + "token";
         const tokenBody = {
             scooterId: scooterId,
-            password: scooterId
+            password: scooterId.toString()
         }
 
         const token = await fetch(url, {
@@ -100,15 +100,18 @@ export default {
             method: "POST"
         })
             .then((response) => {
-                if (response.status == 201) {
+                console.log("response", response)
+                if (response.status == 200) {
                     return response.json()
                 }
             })
             .then((result) => {
+                console.log("result", result)
                 if (result !== undefined) {
                     return result.data.token
                 }
             })
+        console.log("token i metod", token)
         return token
     },
 

@@ -143,5 +143,20 @@ export default {
         }
 
         return dateOrTimeString
+    },
+
+    /**
+     * Creates empty files if necessary
+     */
+    touchFiles: function(): void {
+        const files = ["battery", "gps", "redLight", "speedometer"]
+
+        for (const file of files) {
+            try {
+                fs.readFileSync(hardwarePath + file, readFileFlag)
+            } catch (error) {
+                fs.writeFileSync(hardwarePath + file, "", writeFileFlag)
+            }
+        }
     }
 }

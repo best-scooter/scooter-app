@@ -10,8 +10,8 @@
     "lint": "npx eslint .",
     "dev": "NODE_ENV=development node ./dist",
     "sim": "NODE_ENV=simulation node ./dist",
-    "docker:build": "npm run build && docker build . --no-cache -t bestscooter.azurecr.io/scooter-app:1.0",
-    "docker:push": "az acr login --name bestscooter && docker push bestscooter.azurecr.io/scooter-app:1.0"
+    "docker:build": "npm run build && docker build . --no-cache -t bestscooter.azurecr.io/scooter-app",
+    "docker:push": "az acr login --name bestscooter && docker push bestscooter.azurecr.io/scooter-app"
   },
   "repository": {
     "type": "git",
@@ -37,6 +37,7 @@
     "@babel/core": "^7.23.6",
     "@babel/preset-env": "^7.23.6",
     "@babel/preset-typescript": "^7.23.3",
+    "@types/websocket": "^1.0.10",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "babel-jest": "^29.7.0",

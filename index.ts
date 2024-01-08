@@ -1,7 +1,8 @@
-const WebSocketClient = require('websocket').w3cwebsocket;
+const WebSocketClient = require('websocket').client;
 import ScooterUtils from './controller/scooterUtils'
 import HardwareBridge from './model/hardwareBridge';
 import ScooterApi from './model/scooterApi';
+import {connection, Message} from 'websocket'
 require("dotenv").config({ path: `./env/${process.env.NODE_ENV}.env` })
 
 const scooterId = HardwareBridge.readScooterId()
@@ -18,58 +19,72 @@ const updateTime = Number(ScooterApi.getEnvVariable("HARDWARE_UPDATE"))
  * Websocket client.
  */
 const wsUrl = ScooterApi.getEnvVariable("WS_URL")
-const wsClient = new WebSocketClient(wsUrl, token)
+const wsClient = new WebSocketClient()
+let wsConnection: connection
 
-wsClient.onerror = function () {
-    console.log('Websocket: Connection Error');
-};
+wsClient.on('connectFailed', function(error: any) {
+    console.error("WebSocket connect error:", error)
+})
 
-wsClient.onopen = function () {
+wsClient.on('connect', function (connection: connection) {
     console.log('Webscoket: Client Connected');
     const subscribeMsg = {
         message: "subscribe",
         subscriptions: "trip"
     }
-    wsClient.send(subscribeMsg)
-};
+    connection.send(subscribeMsg)
 
-wsClient.onclose = function () {
-    console.log('Websocket: Client Closed');
-};
+    connection.on('error', function () {
+        console.log('Websocket: Connection Error');
+    });
 
-wsClient.onmessage = async function (event: string) {
-    const msg = JSON.parse(event)
-
-    switch (msg.message) {
-        case "trip":
-            if (msg.scooterId == scooterId) {
-                const customerId = msg.customerId
-
-                const available = await ScooterUtils.checkAvailable()
-                if (msg.timeEnded !== undefined) {
-                    await ScooterUtils.endScooterRent(customerId)
-                } else if (available) {
-                    await ScooterUtils.beginScooterRent(customerId)
-                }
-                break;
+    connection.on('close', function () {
+        console.log('Websocket: Client Closed');
+    });
+    
+    connection.on('message', async function (message: Message) {
+        if (message.type == "utf8") {
+            const msg = JSON.parse(message.utf8Data)
+        
+            switch (msg.message) {
+                case "trip":
+                    if (msg.scooterId == scooterId) {
+                        const customerId = msg.customerId
+        
+                        const available = await ScooterUtils.checkAvailable()
+                        if (msg.timeEnded !== undefined) {
+                            await ScooterUtils.endScooterRent(customerId)
+                        } else if (available) {
+                            await ScooterUtils.beginScooterRent(customerId)
+                        }
+                        break;
+                    }
             }
-    }
-};
+        }
+    });
 
-setInterval(() => {
-    const battery = HardwareBridge.checkBattery(scooterId)
-    const gps = HardwareBridge.checkPosition(scooterId)
-    const latitude = gps.x
-    const longitude = gps.y
-    const speedometer = HardwareBridge.checkSpeedometer(scooterId)
+    HardwareBridge.touchFiles()
 
-    const hardwareMsg = {
-        message: "scooter",
-        scooterId: scooterId,
-        positionX: latitude,
-        positionY: longitude,
-        battery: battery,
-        currentSpeed: speedometer
-    }
-    wsClient.send(JSON.stringify(hardwareMsg))
-}, updateTime)
+    setInterval(() => {
+        const battery = HardwareBridge.checkBattery(scooterId)
+        const gps = HardwareBridge.checkPosition(scooterId)
+        const latitude = gps.x
+        const longitude = gps.y
+        const speedometer = HardwareBridge.checkSpeedometer(scooterId)
+    
+        const hardwareMsg = {
+            message: "scooter",
+            scooterId: scooterId,
+            positionX: latitude,
+            positionY: longitude,
+            battery: battery,
+            currentSpeed: speedometer
+        }
+        connection.send(JSON.stringify(hardwareMsg))
+    }, updateTime)
+    
+});
+
+wsClient.connect(wsUrl, undefined, undefined, {
+    "sec-websocket-protocol": token
+})
