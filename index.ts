@@ -11,7 +11,6 @@ const token = ScooterApi.token(scooterId).then((value) => {
 
 const updateTime = Number(ScooterApi.getEnvVariable("HARDWARE_UPDATE"))
 
-// TODO: Behöver pusha min docker-image någonstans?
 // TODO: Lägga till volymen i bash-scriptet: "docker run -d -e SCOOTERID=$counter -e PASSWORD=$counter --network=... --link=... --port=... -volume="hardware:/scooter-app/model/hardware/:ro" <image>"
 
 /**
