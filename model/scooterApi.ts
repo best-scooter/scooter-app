@@ -11,9 +11,16 @@ export default {
     read: async function (scooterId: number): Promise<Scooter> {
         const backendServer = this.getEnvVariable("BACKEND")
         const version = this.getEnvVariable("VERSION")
+        const token = this.getEnvVariable("TOKEN")
         const url = backendServer + version + "/scooter/" + scooterId;
 
-        const scooter = fetch(url)
+        const scooter = fetch(url, {
+            headers: {
+                "content-type": "application/json",
+                "X-Access-Token": token
+            },
+            method: "GET"
+        })
             .then((response) => {
                 if (response.status == 200) {
                     return response.json()
@@ -38,6 +45,7 @@ export default {
         const backendServer = this.getEnvVariable("BACKEND")
         const version = this.getEnvVariable("VERSION")
         const scooterId = updatedScooter.id
+        const token = this.getEnvVariable("TOKEN")
         const url = backendServer + version + "/scooter/" + scooterId;
         let statusMessage: StatusMessage = {
             "success": false,
@@ -46,7 +54,8 @@ export default {
         const response = await fetch(url, {
             body: JSON.stringify(updatedScooter),
             headers: {
-                "content-type": "application/json"
+                "content-type": "application/json",
+                "X-Access-Token": token
             },
             method: "PUT"
         })
@@ -100,7 +109,6 @@ export default {
                     return result.data.token
                 }
             })
-
         return token
     },
 

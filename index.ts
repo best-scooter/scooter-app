@@ -5,11 +5,15 @@ import ScooterApi from './model/scooterApi';
 require("dotenv").config({ path: `./env/${process.env.NODE_ENV}.env` })
 
 const scooterId = HardwareBridge.readScooterId()
-const token = ScooterApi.token(scooterId)
+const token = ScooterApi.token(scooterId).then((value) => {
+    process.env.TOKEN = value.toString()
+})
+
 const updateTime = Number(ScooterApi.getEnvVariable("HARDWARE_UPDATE"))
 
 // TODO: Add the volume part to the big docker-compose for mock-service.
-// TODO: Sync with Adam, make sure class, hardware-files and database are in sync
+// TODO: Behöver pusha min docker-image någonstans?
+// TODO: Lägga till volymen i bash-scriptet: "docker run -d -e SCOOTERID=$counter -e PASSWORD=$counter --network=... --link=... --port=... -volume="hardware:/scooter-app/model/hardware/:ro" <image>"
 
 /**
  * Websocket client.
@@ -44,25 +48,12 @@ wsClient.onmessage = async function (event: string) {
 
                 const available = await ScooterUtils.checkAvailable()
                 if (msg.timeEnded !== undefined) {
-                    ScooterUtils.endScooterRent(customerId)
+                    await ScooterUtils.endScooterRent(customerId)
                 } else if (available) {
-                    ScooterUtils.beginScooterRent(customerId)
+                    await ScooterUtils.beginScooterRent(customerId)
                 }
                 break;
             }
-
-        // case "setDisabledOrNot":
-        //     const disabled = false // get from message?
-        //     ScooterUtils.setDisabledOrNot(disabled)
-        //     break;
-        // case "servicedOrNot":
-        //     const serviced = false // get from message?
-        //     ScooterUtils.servicedOrNot(serviced)
-        //     break;
-        // case "changeCharging":
-        //     const charge = false // get from message?
-        //     ScooterUtils.changeCharging(charge)
-        //     break;
     }
 };
 
@@ -81,5 +72,5 @@ setInterval(() => {
         battery: battery,
         currentSpeed: speedometer
     }
-    wsClient.send(hardwareMsg)
+    wsClient.send(JSON.stringify(hardwareMsg))
 }, updateTime)

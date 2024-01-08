@@ -13,7 +13,6 @@ const logPath = ScooterApi.getEnvVariable("LOG_PATH")
 const appendFileFlag = { encoding: "utf8", flag: "a+", mode: 0o666 }
 
 export default {
-
     /**
      * Checks if a scooter can be rented by a customer. If so, the scooter is rented.
      * Related to requirement 5: A customer should be able to rent a scooter.
@@ -192,7 +191,7 @@ export default {
         }
 
         const updatedScooter = scooter
-        const statusMessage = await ScooterApi.update(updatedScooter) // skicka till ws istället
+        const statusMessage = await ScooterApi.update(updatedScooter)
 
         return statusMessage
     },
