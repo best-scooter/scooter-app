@@ -32,6 +32,10 @@ Kör applikationen i simulation mode.
 
 Kör först scriptet "npm run build" och bygger sedan docker-imagen.
 
+### npm run docker:push
+
+Pushar imagen till ACR
+
 ## Filstruktur
 
 ## Index

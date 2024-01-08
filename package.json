@@ -10,7 +10,8 @@
     "lint": "npx eslint .",
     "dev": "NODE_ENV=development node ./dist",
     "sim": "NODE_ENV=simulation node ./dist",
-    "docker:build": "npm run build && docker build . --no-cache -t best-scooter/scooter-app:1.0"
+    "docker:build": "npm run build && docker build . --no-cache -t best-scooter/scooter-app:1.0",
+    "docker:push": "az acr login --name bestscooter && docker push bestscooter.azurecr.io/scooter-app:1.0"
   },
   "repository": {
     "type": "git",
