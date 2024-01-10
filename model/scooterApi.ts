@@ -83,7 +83,7 @@ export default {
      * @param {number} scooterId 
      * @returns {string} A token
      */
-    token: async function (scooterId: number): Promise<String> {
+    token: async function (scooterId: number): Promise<string> {
         const backendServer = this.getEnvVariable("BACKEND")
         const version = this.getEnvVariable("VERSION")
         const url = backendServer + version + "/scooter/" + "token";

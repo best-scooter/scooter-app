@@ -3,14 +3,11 @@ import { setInterval } from 'timers';
 import ScooterUtils from './controller/scooterUtils'
 import HardwareBridge from './model/hardwareBridge';
 import ScooterApi from './model/scooterApi';
-import {connection, Message} from 'websocket'
+import { connection, Message } from 'websocket'
 require("dotenv").config({ path: `./env/${process.env.NODE_ENV}.env` })
 
 const scooterId = HardwareBridge.readScooterId()
 const updateTime = Number(ScooterApi.getEnvVariable("HARDWARE_UPDATE"))
-
-// TODO: Lägga till volymen i bash-scriptet: "docker run -d -e SCOOTERID=$counter -e PASSWORD=$counter --network=... --link=... --port=... -volume="hardware:/scooter-app/model/hardware/:ro" <image>"
-// TODO: Tester får inte till token env???
 
 /**
  * Websocket client.
@@ -29,7 +26,7 @@ ScooterApi.token(scooterId).then((value) => {
     })
 })
 
-wsClient.on('connectFailed', function(error: any) {
+wsClient.on('connectFailed', function (error: Error) {
     console.error("WebSocket connect error:", error)
 })
 
@@ -48,16 +45,16 @@ wsClient.on('connect', function (connection: connection) {
     connection.on('close', function () {
         console.log('Websocket: Client Closed');
     });
-    
+
     connection.on('message', async function (message: Message) {
         if (message.type == "utf8") {
             const msg = JSON.parse(message.utf8Data)
-        
+
             switch (msg.message) {
                 case "trip":
                     if (msg.scooterId == scooterId) {
                         const customerId = msg.customerId
-        
+
                         const available = await ScooterUtils.checkAvailable()
                         if (msg.timeEnded !== undefined) {
                             await ScooterUtils.endScooterRent(customerId)
@@ -78,7 +75,6 @@ wsClient.on('connect', function (connection: connection) {
         const latitude = gps.x
         const longitude = gps.y
         const speedometer = HardwareBridge.checkSpeedometer(scooterId)
-        console.log(longitude, latitude)
         const hardwareMsg = {
             message: "scooter",
             scooterId: scooterId,
@@ -93,7 +89,7 @@ wsClient.on('connect', function (connection: connection) {
             connection.send(JSON.stringify(hardwareMsg))
         }
     }, updateTime)
-    
+
 });
 
 // setInterval(() => {}, 1 << 30);
