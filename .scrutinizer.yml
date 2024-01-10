@@ -1,0 +1,15 @@
+filter:
+  excluded_paths:
+    - "test/"
+    - "fakeDataTest.ts"
+    - "hardwareTest.ts"
+
+checks:
+  javascript: true
+
+build:
+  nodes:
+    analysis:
+      tests:
+        override:
+          - js-scrutinizer-run
