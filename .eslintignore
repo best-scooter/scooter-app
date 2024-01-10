@@ -1,1 +1,5 @@
 **/*.js
+
+fakeDataTest.ts
+
+hardwareTest.ts

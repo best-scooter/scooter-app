@@ -145,15 +145,15 @@ test('Successfully get (POST) a scooter token', async () => {
     fetch.mockResponseOnce(JSON.stringify(
         {
             data: {
-                token: "tokenstring",
+                token: "testToken",
                 scooterId: scooterId
             }
         }
-    ), { status: 201 })
+    ), { status: 200 })
 
     const result = await ScooterApi.token(scooterId)
 
-    expect(result).toBe("tokenstring")
+    expect(result).toBe("testToken")
     expect(fetch.mock.calls.length).toEqual(1)
     expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + "token")
 })
