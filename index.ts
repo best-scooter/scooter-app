@@ -1,4 +1,5 @@
 const WebSocketClient = require('websocket').client;
+import { setInterval } from 'timers';
 import ScooterUtils from './controller/scooterUtils'
 import HardwareBridge from './model/hardwareBridge';
 import ScooterApi from './model/scooterApi';
@@ -6,10 +7,6 @@ import {connection, Message} from 'websocket'
 require("dotenv").config({ path: `./env/${process.env.NODE_ENV}.env` })
 
 const scooterId = HardwareBridge.readScooterId()
-const token = ScooterApi.token(scooterId).then((value) => {
-    process.env.TOKEN = value.toString()
-})
-
 const updateTime = Number(ScooterApi.getEnvVariable("HARDWARE_UPDATE"))
 
 // TODO: Lägga till volymen i bash-scriptet: "docker run -d -e SCOOTERID=$counter -e PASSWORD=$counter --network=... --link=... --port=... -volume="hardware:/scooter-app/model/hardware/:ro" <image>"
@@ -20,6 +17,17 @@ const updateTime = Number(ScooterApi.getEnvVariable("HARDWARE_UPDATE"))
  */
 const wsUrl = ScooterApi.getEnvVariable("WS_URL")
 const wsClient = new WebSocketClient()
+let refreshInterval: NodeJS.Timeout
+let lastPosition: [number, number] = [0,0]
+
+ScooterApi.token(scooterId).then((value) => {
+    const token = value.toString()
+
+    process.env.TOKEN = token
+    wsClient.connect(wsUrl, undefined, undefined, {
+        "sec-websocket-protocol": token
+    })
+})
 
 wsClient.on('connectFailed', function(error: any) {
     console.error("WebSocket connect error:", error)
@@ -31,7 +39,7 @@ wsClient.on('connect', function (connection: connection) {
         message: "subscribe",
         subscriptions: "trip"
     }
-    connection.send(subscribeMsg)
+    connection.send(JSON.stringify(subscribeMsg))
 
     connection.on('error', function () {
         console.log('Websocket: Connection Error');
@@ -64,13 +72,13 @@ wsClient.on('connect', function (connection: connection) {
 
     HardwareBridge.touchFiles()
 
-    setInterval(() => {
+    refreshInterval = setInterval(() => {
         const battery = HardwareBridge.checkBattery(scooterId)
         const gps = HardwareBridge.checkPosition(scooterId)
         const latitude = gps.x
         const longitude = gps.y
         const speedometer = HardwareBridge.checkSpeedometer(scooterId)
-    
+        console.log(longitude, latitude)
         const hardwareMsg = {
             message: "scooter",
             scooterId: scooterId,
@@ -79,11 +87,19 @@ wsClient.on('connect', function (connection: connection) {
             battery: battery,
             currentSpeed: speedometer
         }
-        connection.send(JSON.stringify(hardwareMsg))
+
+        if (JSON.stringify(lastPosition) != JSON.stringify([longitude, latitude])) {
+            lastPosition = [longitude, latitude]
+            connection.send(JSON.stringify(hardwareMsg))
+        }
     }, updateTime)
     
 });
 
-wsClient.connect(wsUrl, undefined, undefined, {
-    "sec-websocket-protocol": token
-})
+// setInterval(() => {}, 1 << 30);
+
+process.on('SIGINT', function() {
+    console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+    clearInterval(refreshInterval)
+    process.exit(0);
+});

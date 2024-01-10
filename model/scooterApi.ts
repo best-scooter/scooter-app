@@ -100,18 +100,15 @@ export default {
             method: "POST"
         })
             .then((response) => {
-                console.log("response", response)
                 if (response.status == 200) {
                     return response.json()
                 }
             })
             .then((result) => {
-                console.log("result", result)
                 if (result !== undefined) {
                     return result.data.token
                 }
             })
-        console.log("token i metod", token)
         return token
     },
 
