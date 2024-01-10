@@ -12,6 +12,8 @@ const token = ScooterApi.token(scooterId).then((value) => {
 
 const updateTime = Number(ScooterApi.getEnvVariable("HARDWARE_UPDATE"))
 
+// TODO: Lägga till scrutinizer
+
 /**
  * Websocket client.
  */
@@ -26,7 +28,7 @@ wsClient.on('connect', function (connection: connection) {
     console.log('Webscoket: Client Connected');
     const subscribeMsg = {
         message: "subscribe",
-        subscriptions: "trip"
+        subscriptions: "trip, scooter" // TODO: kolla om statusar ändras
     }
     connection.send(subscribeMsg)
 
