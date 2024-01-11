@@ -10,8 +10,10 @@
     "lint": "npx eslint .",
     "dev": "NODE_ENV=development node ./dist",
     "sim": "NODE_ENV=simulation node ./dist",
-    "docker:build": "npm run build && docker build . --no-cache -t bestscooter.azurecr.io/scooter-app",
-    "docker:push": "az acr login --name bestscooter && docker push bestscooter.azurecr.io/scooter-app"
+    "docker:build": "npm run build && docker build . --no-cache -t missivaeak/bestscooter_scooter-app:alt",
+    "docker:push": "docker push missivaeak/bestscooter_scooter-app:alt",
+    "docker:build:acr": "npm run build && docker build . --no-cache -t bestscooter.azurecr.io/scooter-app:alt",
+    "docker:push:acr": "az acr login --name bestscooter && docker push bestscooter.azurecr.io/scooter-app:alt"
   },
   "repository": {
     "type": "git",
