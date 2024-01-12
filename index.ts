@@ -5,6 +5,7 @@ import HardwareBridge from './model/hardwareBridge';
 import ScooterApi from './model/scooterApi';
 import WSMessage from './model/types/wsMessage';
 import { connection, Message } from 'websocket'
+import type Position from './model/types/position'
 require("dotenv").config({ path: `./env/${process.env.NODE_ENV}.env` })
 
 const scooterId = HardwareBridge.readScooterId()
@@ -86,11 +87,31 @@ wsClient.on('connect', function (connection: connection) {
     HardwareBridge.touchFiles()
 
     refreshInterval = setInterval(() => {
-        const battery = HardwareBridge.checkBattery(scooterId)
-        const gps = HardwareBridge.checkPosition(scooterId)
-        const latitude = gps.x
-        const longitude = gps.y
-        const speedometer = HardwareBridge.checkSpeedometer(scooterId)
+        let battery: number
+        let gps: Position
+        let latitude: number
+        let longitude: number
+        let speedometer: number
+
+        try {
+            battery = HardwareBridge.checkBattery(scooterId)
+            gps = HardwareBridge.checkPosition(scooterId)
+            latitude = gps.x
+            longitude = gps.y
+            speedometer = HardwareBridge.checkSpeedometer(scooterId)
+        } catch (error) {
+            // If it's a syntax error its it means app failed to read the file
+            if (error instanceof SyntaxError) {
+                // Just early end the interval
+                console.error(error)
+                console.warn("Skipping interval update.")
+                return
+            } else {
+                // Throw the unhandled error
+                throw error
+            }
+        }
+
         const hardwareMsg = {
             message: "scooter",
             scooterId: scooterId,
@@ -112,4 +133,4 @@ process.on('SIGINT', function () {
     console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
     clearInterval(refreshInterval)
     process.exit(0);
-});
+})
