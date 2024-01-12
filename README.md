@@ -1,12 +1,14 @@
 # Scooter-app
 
-Program som är tänkt att att köras i varje simulerad cykel och styra/övervaka den.
+Program som är tänkt att att köras i varje simulerad cykel och styra/övervaka den. Detta repo är en del av av ett större system och ingår i organisationen best-scooter: https://github.com/best-scooter
+Programmet kan köras individuellt med scriptet 'npm run dev', men inte mycket kommer hända då scooter-app förlitar sig på flera av de andra delsystemen i best-scooter.
+För att köra scooter-app så som det är tänk i simulering behövs även database-server, api-server, ws-server, mock-service och docker som också ingår i best-scooter. Varje cykel kan då köras som en individuell container i ett större system.
 
 ## Scripts
 
 ### npm test
 
-Kör alla enhetstester.
+Kör alla enhetstester med code coverage.
 
 ### npm run build
 
@@ -24,10 +26,6 @@ Kör lintern.
 
 Kör applikationen i development mode.
 
-### npm run sim
-
-Kör applikationen i simulation mode.
-
 ### npm run docker:build
 
 Kör först scriptet "npm run build" och bygger sedan docker-imagen.
@@ -40,7 +38,7 @@ Pushar imagen till ACR
 
 ## Index
 
-Består av två websocket-klienter för att ta emot och skicka meddelanden mellan dels ws-server och mock-service.
+Består av en websocket-klienter för att ta emot och skicka meddelanden med websocket-servern.
 
 ## Controller
 
@@ -48,26 +46,26 @@ Består av två websocket-klienter för att ta emot och skicka meddelanden mella
 
 #### scooterUtils
 
-Hanterar inkommande kommandon gällande exempelvis att hyra/lämna tillbaka cykeln, uppdatera cykelns log, skicka API request och så vidare. Beroende på vilka inkommande websocket-meddelanden som cykeln tar emot.
+Hanterar inkommande kommandon gällande exempelvis att hyra/lämna tillbaka cykeln, uppdatera cykelns log, skicka API request och så vidare.
 
 ## Model
 
 ### Hardware
 
-Hårdvaran så som cykelns batteri, gps, lampa och hastighetsmätare representeras av filer där alla cyklars värden kommer att finnas.
+Hårdvaran så som cykelns batteri, gps, lampa och hastighetsmätare representeras av filer där alla cyklars värden kommer att finnas. Varje key representeras av varje cykels individuella id-nummer.
 Filerna kommer ha följande struktur:
 
 #### battery
 
 ```
 {
-    1: 0.5,
-    2: 0.8,
+    1: 0.52,
+    2: 0.87,
     ...
 }
 ```
 
-Där varje key representeras av varje cykels individuella id-nummer. Batterinivån representeras av ett värde mellan 0-1 (motsvarar 0-100%).
+Batterinivån representeras av ett värde mellan 0-1 (motsvarar 0-100%).
 
 #### gps
 
@@ -111,4 +109,4 @@ Cykelns program kommer endast att läsa av datan i filerna via hardwareBridge. E
 
 #### scooterAPI
 
-Finns stöd för att göra GET request för en enskild cykel, PUT för en enskild cykel och POST för att få en cykel-token.
+Finns stöd för att göra GET request för en enskild cykel och PUT för en enskild cykel. Finns även stöd för POST för att få en cykel-token som används vid databas-uppdateringar och för att ansluta till websocket-servern.

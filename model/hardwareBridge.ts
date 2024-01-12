@@ -148,7 +148,7 @@ export default {
     /**
      * Creates empty files if necessary
      */
-    touchFiles: function(): void {
+    touchFiles: function (): void {
         const files = ["battery", "gps", "redLight", "speedometer"]
 
         for (const file of files) {

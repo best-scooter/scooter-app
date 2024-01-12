@@ -3,13 +3,12 @@ import { setInterval } from 'timers';
 import ScooterUtils from './controller/scooterUtils'
 import HardwareBridge from './model/hardwareBridge';
 import ScooterApi from './model/scooterApi';
+import WSMessage from './model/types/wsMessage';
 import { connection, Message } from 'websocket'
 require("dotenv").config({ path: `./env/${process.env.NODE_ENV}.env` })
 
 const scooterId = HardwareBridge.readScooterId()
 const updateTime = Number(ScooterApi.getEnvVariable("HARDWARE_UPDATE"))
-
-// TODO: Lägga till scrutinizer
 
 /**
  * Websocket client.
@@ -17,7 +16,7 @@ const updateTime = Number(ScooterApi.getEnvVariable("HARDWARE_UPDATE"))
 const wsUrl = ScooterApi.getEnvVariable("WS_URL")
 const wsClient = new WebSocketClient()
 let refreshInterval: NodeJS.Timeout
-let lastPosition: [number, number] = [0,0]
+let lastPosition: [number, number] = [0, 0]
 
 ScooterApi.token(scooterId).then((value) => {
     const token = value.toString()
@@ -36,7 +35,7 @@ wsClient.on('connect', function (connection: connection) {
     console.log('Webscoket: Client Connected');
     const subscribeMsg = {
         message: "subscribe",
-        subscriptions: "trip, scooter" // TODO: kolla om statusar ändras
+        subscriptions: "trip, scooter"
     }
     connection.send(JSON.stringify(subscribeMsg))
 
@@ -50,11 +49,11 @@ wsClient.on('connect', function (connection: connection) {
 
     connection.on('message', async function (message: Message) {
         if (message.type == "utf8") {
-            const msg = JSON.parse(message.utf8Data)
+            const msg: WSMessage = JSON.parse(message.utf8Data)
 
-            switch (msg.message) {
-                case "trip":
-                    if (msg.scooterId == scooterId) {
+            if (msg.scooterId == scooterId) {
+                switch (msg.message) {
+                    case "trip": {
                         const customerId = msg.customerId
 
                         const available = await ScooterUtils.checkAvailable()
@@ -65,6 +64,21 @@ wsClient.on('connect', function (connection: connection) {
                         }
                         break;
                     }
+
+                    case "scooter": {
+                        const statusMessage = await ScooterUtils.checkStatusChange(scooterId, msg)
+
+                        if (statusMessage.success) {
+                            const scooterMsg = {
+                                message: "scooter",
+                                scooterId: scooterId,
+                                available: statusMessage.available
+                            }
+                            connection.send(JSON.stringify(scooterMsg))
+                        }
+                        break;
+                    }
+                }
             }
         }
     });
@@ -94,10 +108,8 @@ wsClient.on('connect', function (connection: connection) {
 
 });
 
-// setInterval(() => {}, 1 << 30);
-
-process.on('SIGINT', function() {
-    console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+process.on('SIGINT', function () {
+    console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
     clearInterval(refreshInterval)
     process.exit(0);
 });

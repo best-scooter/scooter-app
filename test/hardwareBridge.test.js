@@ -59,7 +59,6 @@ test('checkPosition throws error.', () => {
     function hardwareError() {
         HardwareBridge.checkPosition(scooterId)
     }
-
     expect(hardwareError).toThrow()
 })
 
@@ -177,4 +176,33 @@ test('Do not add a zero to number greater or equal to  10', () => {
 
     expect(resultEqual).toEqual(expectedEqual)
     expect(resultGreater).toEqual(expectedGreater)
+})
+
+test('Test that hardware files are created', () => {
+    fs.unlinkSync(basePath + "battery")
+    fs.unlinkSync(basePath + "gps")
+    fs.unlinkSync(basePath + "redLight")
+    fs.unlinkSync(basePath + "speedometer")
+
+    const batteryBefore = fs.existsSync(basePath + "battery")
+    const gpsBefore = fs.existsSync(basePath + "gps")
+    const redLightBefore = fs.existsSync(basePath + "redLight")
+    const speedometerBefore = fs.existsSync(basePath + "speedometer")
+
+    HardwareBridge.touchFiles()
+
+    const batteryAfter = fs.existsSync(basePath + "battery")
+    const gpsAfter = fs.existsSync(basePath + "gps")
+    const redLightAfter = fs.existsSync(basePath + "redLight")
+    const speedometerAfter = fs.existsSync(basePath + "speedometer")
+
+    expect(batteryBefore).toEqual(false)
+    expect(gpsBefore).toEqual(false)
+    expect(redLightBefore).toEqual(false)
+    expect(speedometerBefore).toEqual(false)
+
+    expect(batteryAfter).toEqual(true)
+    expect(gpsAfter).toEqual(true)
+    expect(redLightAfter).toEqual(true)
+    expect(speedometerAfter).toEqual(true)
 })
