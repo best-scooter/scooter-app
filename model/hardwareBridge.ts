@@ -29,7 +29,7 @@ export default {
 
             return position
         } catch (error) {
-            throw error
+            throw new Error(error)
         }
     },
 
@@ -46,7 +46,7 @@ export default {
 
             return batteryLevel
         } catch (error) {
-            throw error
+            throw new Error(error)
         }
     },
 
@@ -62,7 +62,7 @@ export default {
             const speed = allSpeeds[scooterId]
             return speed
         } catch (error) {
-            throw error
+            throw new Error(error)
         }
     },
 
@@ -77,7 +77,7 @@ export default {
 
             fs.writeFileSync(hardwarePath + "redLight", JSON.stringify(allLamps), writeFileFlag)
         } catch (error) {
-            throw error
+            throw new Error(error)
         }
     },
 
@@ -92,7 +92,7 @@ export default {
 
             fs.writeFileSync(hardwarePath + "redLight", JSON.stringify(allLamps), writeFileFlag)
         } catch (error) {
-            throw error
+            throw new Error(error)
         }
     },
 

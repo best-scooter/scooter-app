@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
       "target": "es2017",   
-      "module": "ES2022",
+      "module": "NodeNext",
       "noImplicitAny": true,
       "removeComments": false,
       "preserveConstEnums": true,
