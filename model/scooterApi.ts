@@ -14,7 +14,7 @@ export default {
         const token = this.getEnvVariable("TOKEN")
         const url = backendServer + version + "/scooter/" + scooterId;
 
-        const scooter = fetch(url, {
+        const scooter = await fetch(url, {
             headers: {
                 "content-type": "application/json",
                 "X-Access-Token": token
@@ -28,10 +28,9 @@ export default {
             })
             .then((result) => {
                 if (result !== undefined) {
-                    return result.data[0]
+                    return result.data
                 }
             })
-
         return scooter
     },
 

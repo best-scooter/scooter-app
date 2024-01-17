@@ -35,7 +35,7 @@ wsClient.on('connect', function (connection: connection) {
     console.log('Webscoket: Client Connected');
     const subscribeMsg = {
         message: "subscribe",
-        subscriptions: "trip"
+        subscriptions: ["trip"]
     }
     connection.send(JSON.stringify(subscribeMsg))
 
@@ -56,10 +56,9 @@ wsClient.on('connect', function (connection: connection) {
                     if (msg.scooterId == scooterId) {
                         const customerId = msg.customerId
 
-                        const available = await ScooterUtils.checkAvailable()
                         if (msg.timeEnded !== undefined) {
                             await ScooterUtils.endScooterRent(customerId)
-                        } else if (available) {
+                        } else if (msg.timeStarted !== undefined) {
                             await ScooterUtils.beginScooterRent(customerId)
                         }
                         break;
@@ -85,6 +84,7 @@ wsClient.on('connect', function (connection: connection) {
             speedometer = HardwareBridge.checkSpeedometer(scooterId)
         } catch (error) {
             // If it's a syntax error its it means app failed to read the file
+            // This TypeError seems to be when a fetch request is failing due to high traffic
             if (error instanceof SyntaxError) {
                 // Just early end the interval
                 console.error(error)

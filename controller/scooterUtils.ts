@@ -28,7 +28,7 @@ export default {
 
         if (
             scooter.available &&
-            battery > 0.5 &&
+            battery > 0.3 &&
             !scooter.decomissioned &&
             !scooter.beingServiced &&
             !scooter.charging &&
