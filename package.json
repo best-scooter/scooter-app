@@ -13,7 +13,9 @@
     "docker:build": "npm run build && docker build . --no-cache -t missivaeak/bestscooter_scooter-app",
     "docker:push": "docker push missivaeak/bestscooter_scooter-app",
     "docker:build:acr": "npm run build && docker build . --no-cache -t bestscooter.azurecr.io/scooter-app",
-    "docker:push:acr": "az acr login --name bestscooter && docker push bestscooter.azurecr.io/scooter-app"
+    "docker:push:acr": "az acr login --name bestscooter && docker push bestscooter.azurecr.io/scooter-app",
+    "docker:build:alt": "npm run build && docker build . --no-cache -t missivaeak/bestscooter_scooter-app:alt",
+    "docker:push:alt": "docker push missivaeak/bestscooter_scooter-app:alt"
   },
   "repository": {
     "type": "git",

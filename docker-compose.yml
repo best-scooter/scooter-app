@@ -1,6 +1,6 @@
 services:
   scooters:
-    image: best-scooter/scooter-app
+    image: missivaeak/bestscooter_scooter-app:alt
     volumes:
       - hardware:/scooter-app/model/hardware/:ro
     environment:

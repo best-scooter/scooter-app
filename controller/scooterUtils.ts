@@ -50,7 +50,7 @@ export default {
                 }
                 const start = true
                 this.updateLog(start, customerId, position)
-            }
+            } // TODO: Lägg till logg-uppdatering ifall ej success på databas
         } else {
             rentScooterMessage = {
                 "message": "Could not rent scooter"
@@ -94,6 +94,8 @@ export default {
                 }
                 const start = false
                 this.updateLog(start, customerId, position)
+            } else if (statusMessage.success == false) {
+                this.updateLogDatabaseFail(scooterId)
             }
         } else {
             returnScooterMessage = {
@@ -124,6 +126,15 @@ export default {
         } else if (!start) {
             fs.appendFileSync(logPath, endString, appendFileFlag)
         }
+    },
+
+    updateLogDatabaseFail: function (scooterId: number): void {
+        const currentDate = HardwareBridge.getDate()
+        const currentTime = HardwareBridge.getTime()
+
+        const string = "ERROR: Database update failed for scooter " + scooterId + " at " + currentDate + " - " + currentTime + "\n"
+
+        fs.appendFileSync(logPath, string, appendFileFlag)
     },
 
     updateLogFail: function (customerId: number): void {
@@ -184,7 +195,7 @@ export default {
 
         const battery: BatteryMessage = {
             "batteryLevel": batteryLevel,
-            "needsCharging": batteryLevel < 0.1 && !scooter.charging,
+            "needsCharging": batteryLevel < 0.1 && !scooter.charging, // TODO: Lägg till i ws-meddelande
         }
 
         return battery
