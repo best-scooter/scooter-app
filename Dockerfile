@@ -4,6 +4,7 @@ WORKDIR /scooter-app
 
 COPY dist/ ./dist/
 COPY package*.json ./
+COPY scooter-trips.log ./
 COPY env/ ./env/
 
 EXPOSE 1337
