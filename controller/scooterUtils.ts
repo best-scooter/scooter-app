@@ -50,6 +50,8 @@ export default {
                 }
                 const start = true
                 this.updateLog(start, customerId, position)
+            } else if (statusMessage.success == false) {
+                this.updateLogDatabaseFail(scooterId)
             }
         } else {
             rentScooterMessage = {
@@ -131,6 +133,15 @@ export default {
         const currentTime = HardwareBridge.getTime()
 
         const string = "ERROR: Customer " + customerId + " attempted to rent/return scooter at " + currentDate + " - " + currentTime + " but failed." + "\n"
+
+        fs.appendFileSync(logPath, string, appendFileFlag)
+    },
+
+    updateLogDatabaseFail: function (scooterId: number): void {
+        const currentDate = HardwareBridge.getDate()
+        const currentTime = HardwareBridge.getTime()
+
+        const string = "ERROR: Database update failed for scooter " + scooterId + " at " + currentDate + " - " + currentTime + "\n"
 
         fs.appendFileSync(logPath, string, appendFileFlag)
     },
