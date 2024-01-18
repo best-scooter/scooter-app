@@ -163,6 +163,7 @@ export default {
     },
 
     /**
+     * Currently not in use
      * Related to requirement 2: The bike should be able to update it's position (within regular intervals)
      * @async
      * @returns {boolean} If the update was successful or not
@@ -181,6 +182,7 @@ export default {
     },
 
     /**
+     * Currently not in use
      * Related to requirement 3: The scooter should be able to tell if it's available
      * @async
      * @returns {boolean} If it is available or not
@@ -192,6 +194,7 @@ export default {
     },
 
     /**
+     * Currently not in use
      * Related to requirement 3: The scooter should be able to tell it's current speed
      * @returns {number} Current speed
      */
@@ -218,6 +221,7 @@ export default {
     },
 
     /**
+     * Currently not in use
      * Related to requirement 4: An administrator should be able to set the scooter in disabled mode (on/off)
      * @async
      * @param {boolean} off If it should be turned off or not
@@ -243,6 +247,7 @@ export default {
     },
 
     /**
+     * Currently not in use
      * Related to requirement 9: Should be able to change to/from service mode.
      * @async
      * @param {boolean} serviced 
@@ -267,6 +272,7 @@ export default {
     },
 
     /**
+     * Currently not in use
      * Change the decomissioned status
      * @async
      * @param {boolean} decomissioned 
@@ -292,6 +298,7 @@ export default {
     },
 
     /**
+     * Currently no in use
      * The scooter should be able to be charged. If it is being charged, it can not be rented until fully charged
      * Related to requirement 9: A scooter which is being charged (at a charging station) should not be able to be rented by a customer
      * @async
