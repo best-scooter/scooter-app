@@ -134,23 +134,21 @@ export default {
      * @returns {Objet} Return a position object with latitude and longitude for Stockholm
      */
     fakeStockholmPosition: function (): Position {
-        // const stockholm: Position = {
-        //     "position_x": 59.334591,
-        //     "position_y": 18.063240
-        // }
-
         const stockholm = {
             1: { x: 59.334591, y: 18.063240 }
         }
 
         const stockholmString = JSON.stringify(stockholm)
 
-        // const stockholmString = stockholm.position_x.toString() + ", " + stockholm.position_y.toString()
         fs.writeFileSync(basePath + "gps", stockholmString, writeFileFlag)
 
         return stockholm[1]
     },
 
+    /**
+     * Fake that the scooter lamp is on
+     * @returns {string} Returns the string "on"
+     */
     fakeLampOn: function (): string {
         const fakeLamp = {
             1: "on"
@@ -161,6 +159,10 @@ export default {
         return fakeLamp[1]
     },
 
+    /**
+     * Fake that the scooter lamp is off
+     * @returns {string} Returns the string off
+     */
     fakeLampOff: function (): string {
         const fakeLamp = {
             1: "off"
