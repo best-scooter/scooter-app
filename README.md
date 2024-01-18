@@ -32,6 +32,14 @@ Kör först scriptet "npm run build" och bygger sedan docker-imagen.
 
 ### npm run docker:push
 
+Pushar imagen som en publik image på dockerhub
+
+### npm run docker:build:acr
+
+Kör först scriptet "npm run build" och bygger sedan ACR docker-imagen.
+
+### npm run docker:push:acr
+
 Pushar imagen till ACR
 
 ## Filstruktur
