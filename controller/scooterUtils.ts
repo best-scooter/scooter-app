@@ -7,7 +7,7 @@ import ScooterMessage from "../model/types/scooterMessage";
 import BatteryMessage from "../model/types/batteryMessage";
 import Position from "../model/types/position";
 import Scooter from "../model/types/scooter";
-import hardwareBridge from "../model/hardwareBridge";
+import WSMessage from "../model/types/wsMessage";
 
 const logPath = ScooterApi.getEnvVariable("LOG_PATH")
 const appendFileFlag = { encoding: "utf8", flag: "a+", mode: 0o666 }
@@ -57,7 +57,7 @@ export default {
             rentScooterMessage = {
                 "message": "Could not rent scooter"
             }
-            this.updateLogFail(customerId)
+            this.updateLogRentFail(customerId)
         }
 
         return rentScooterMessage
@@ -96,12 +96,14 @@ export default {
                 }
                 const start = false
                 this.updateLog(start, customerId, position)
+            } else if (statusMessage.success == false) {
+                this.updateLogDatabaseFail(scooterId)
             }
         } else {
             returnScooterMessage = {
                 "message": "Could not return scooter"
             }
-            this.updateLogFail(customerId)
+            this.updateLogRentFail(customerId)
         }
 
         return returnScooterMessage
@@ -128,20 +130,20 @@ export default {
         }
     },
 
-    updateLogFail: function (customerId: number): void {
-        const currentDate = HardwareBridge.getDate()
-        const currentTime = HardwareBridge.getTime()
-
-        const string = "ERROR: Customer " + customerId + " attempted to rent/return scooter at " + currentDate + " - " + currentTime + " but failed." + "\n"
-
-        fs.appendFileSync(logPath, string, appendFileFlag)
-    },
-
     updateLogDatabaseFail: function (scooterId: number): void {
         const currentDate = HardwareBridge.getDate()
         const currentTime = HardwareBridge.getTime()
 
         const string = "ERROR: Database update failed for scooter " + scooterId + " at " + currentDate + " - " + currentTime + "\n"
+
+        fs.appendFileSync(logPath, string, appendFileFlag)
+    },
+
+    updateLogRentFail: function (customerId: number): void {
+        const currentDate = HardwareBridge.getDate()
+        const currentTime = HardwareBridge.getTime()
+
+        const string = "ERROR: Customer " + customerId + " attempted to rent/return scooter at " + currentDate + " - " + currentTime + " but failed." + "\n"
 
         fs.appendFileSync(logPath, string, appendFileFlag)
     },
@@ -186,19 +188,38 @@ export default {
     },
 
     /**
+     * Related to requirement 7: The scooter should be able to warn if it needs charging
+     * @async
+     * @returns {Object} Information about battery status
+     */
+    batteryWarning: function (scooter: Scooter): BatteryMessage {
+        const batteryLevel = HardwareBridge.checkBattery(scooter.id)
+
+        const battery: BatteryMessage = {
+            "batteryLevel": batteryLevel,
+            "needsCharging": batteryLevel < 0.1 && !scooter.charging, // TODO: Lägg till i ws-meddelande
+        }
+
+        return battery
+    },
+
+    /**
      * Related to requirement 4: An administrator should be able to set the scooter in disabled mode (on/off)
      * @async
      * @param {boolean} off If it should be turned off or not
      * @returns {Object} Information if the update was successful or not
      */
-    setDisabledOrNot: async function (off: boolean): Promise<StatusMessage> {
-        const scooterId = hardwareBridge.readScooterId()
+    setDisabled: async function (disabled: boolean, scooterId: number): Promise<StatusMessage> {
         const scooter = await ScooterApi.read(scooterId)
 
-        if (off) {
-            scooter.disabled = true
-        } else if (!off) {
-            scooter.disabled = false
+        if (disabled == true) {
+            scooter.disabled = disabled
+            scooter.available = false
+            HardwareBridge.lampOn(scooterId)
+        } else if (disabled == false) {
+            scooter.disabled = disabled
+            scooter.available = true
+            HardwareBridge.lampOff(scooterId)
         }
 
         const updatedScooter = scooter
@@ -208,37 +229,40 @@ export default {
     },
 
     /**
-     * Related to requirement 7: The scooter should be able to warn if it needs charging
-     * @async
-     * @returns {Object} Information about battery status
-     */
-    checkBattery: function (scooter: Scooter): BatteryMessage {
-        const batteryLevel = HardwareBridge.checkBattery(scooter.id)
-
-        const battery: BatteryMessage = {
-            "batteryLevel": batteryLevel,
-            "needsCharging": batteryLevel < 0.1 && !scooter.charging,
-        }
-
-        return battery
-    },
-
-    /**
      * Related to requirement 9: Should be able to change to/from service mode.
      * @async
      * @param {boolean} serviced 
      * @returns {Object} Information if the update was successful or not
      */
-    servicedOrNot: async function (serviced: boolean): Promise<StatusMessage> {
-        const scooterId = HardwareBridge.readScooterId()
+    setServiced: async function (serviced: boolean, scooterId: number): Promise<StatusMessage> {
         const scooter = await ScooterApi.read(scooterId)
 
-        if (serviced) {
-            scooter.beingServiced = true
+        if (serviced == true) {
+            scooter.beingServiced = serviced
             scooter.available = false
-        } else if (!serviced) {
-            scooter.beingServiced = false
+            HardwareBridge.lampOn(scooterId)
+        } else if (serviced == false) {
+            scooter.beingServiced = serviced
             scooter.available = true
+            HardwareBridge.lampOff(scooterId)
+        }
+
+        const updatedScooter = scooter
+        const statusMessage = await ScooterApi.update(updatedScooter)
+        return statusMessage
+    },
+
+    setDecomissioned: async function (decomissioned: boolean, scooterId: number): Promise<StatusMessage> {
+        const scooter = await ScooterApi.read(scooterId)
+
+        if (decomissioned == true) {
+            scooter.decomissioned = decomissioned
+            scooter.available = false
+            HardwareBridge.lampOn(scooterId)
+        } else if (decomissioned == false) {
+            scooter.decomissioned = decomissioned
+            scooter.available = true
+            HardwareBridge.lampOff(scooterId)
         }
 
         const updatedScooter = scooter
@@ -260,16 +284,59 @@ export default {
         if (shouldCharge) {
             scooter.charging = true
             scooter.available = false
-            HardwareBridge.lampOff(scooterId)
-        } else if (!shouldCharge) {
+            HardwareBridge.lampOn(scooterId)
+        } else if (shouldCharge == false) {
             scooter.charging = false
             scooter.available = true
-            HardwareBridge.lampOn(scooterId)
+            HardwareBridge.lampOff(scooterId)
         }
 
         const updatedScooter = scooter
         const statusMessage = await ScooterApi.update(updatedScooter)
 
         return statusMessage
-    }
+    },
+
+    /**
+     * Change available to true/false
+     * @param {number} scooterId 
+     * @param {boolean} available 
+     * @returns {Object} A statusmessage if the update was successful or not
+     */
+    setAvailable: async function (scooterId: number, available: boolean): Promise<StatusMessage> {
+        const scooter = await ScooterApi.read(scooterId)
+        scooter.available = available
+
+        const statusMessage = await ScooterApi.update(scooter)
+        statusMessage.available = available
+        return statusMessage
+    },
+
+    /**
+     * Checks if the incoming websocket-message has changed the scooters status regarding
+     * decomissioned, service mode and disable mode. If so, the scooter changes it's
+     * available status accordingly.
+     * @param {number} scooterId 
+     * @param {Object} message A websocket message
+     * @returns {Object} A status message whether the available status was updated or not
+     */
+    checkStatusChange: async function (scooterId: number, message: WSMessage): Promise<StatusMessage> {
+        let statusMessage: StatusMessage = {
+            "success": false,
+        }
+
+        if (Object.prototype.hasOwnProperty.call(message, "decomissioned") && message.decomissioned ||
+            Object.prototype.hasOwnProperty.call(message, "beingServiced") && message.beingServiced ||
+            Object.prototype.hasOwnProperty.call(message, "disabled") && message.disabled) {
+            const available = false
+            statusMessage = await this.setAvailable(scooterId, available)
+        } else if (Object.prototype.hasOwnProperty.call(message, "decomissioned") && !message.decomissioned ||
+            Object.prototype.hasOwnProperty.call(message, "beingServiced") && !message.beingServiced ||
+            Object.prototype.hasOwnProperty.call(message, "disabled") && !message.disabled) {
+            const available = true
+            statusMessage = await this.setAvailable(scooterId, available)
+        }
+
+        return statusMessage
+    },
 }

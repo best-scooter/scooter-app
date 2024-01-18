@@ -1,5 +1,6 @@
 import ScooterUtils from "../controller/scooterUtils";
 import FakeData from "./fakeData";
+
 const fs = require('fs')
 require('jest-fetch-mock').enableMocks();
 
@@ -339,6 +340,7 @@ test('Set scooter as disabled', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
+    FakeData.fakeLampOff()
 
     fetch
         .mockResponseOnce(JSON.stringify(
@@ -364,8 +366,8 @@ test('Set scooter as disabled', async () => {
         ))
         .mockResponseOnce(undefined, { status: 204 })
 
-    const off = true
-    const result = await ScooterUtils.setDisabledOrNot(off)
+    const disabled = true
+    const result = await ScooterUtils.setDisabled(disabled, scooterId)
     const expected = {
         "success": true,
         "message": "Successfully updated scooter information",
@@ -382,6 +384,7 @@ test('Set scooter as not disabled', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
+    FakeData.fakeLampOn()
 
     fetch
         .mockResponseOnce(JSON.stringify(
@@ -396,7 +399,7 @@ test('Set scooter as not disabled', async () => {
                         battery: 0.51,
                         maxSpeed: 20,
                         charging: false,
-                        available: true,
+                        available: false,
                         decomissioned: false,
                         beingServiced: false,
                         disabled: true,
@@ -407,8 +410,8 @@ test('Set scooter as not disabled', async () => {
         ))
         .mockResponseOnce(undefined, { status: 204 })
 
-    const off = false
-    const result = await ScooterUtils.setDisabledOrNot(off)
+    const disabled = false
+    const result = await ScooterUtils.setDisabled(disabled, scooterId)
     const expected = {
         "success": true,
         "message": "Successfully updated scooter information",
@@ -434,7 +437,7 @@ test('Check battery level', async () => {
         available: true,
         decomissioned: false,
         beingServiced: false,
-        disabled: true,
+        disabled: false,
         connected: false
     }
 
@@ -458,7 +461,7 @@ test('Check that scooter warns when battery is low', async () => {
         available: true,
         decomissioned: false,
         beingServiced: false,
-        disabled: true,
+        disabled: false,
         connected: false
     }
 
@@ -474,6 +477,7 @@ test('Set scooter in service mode', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
+    FakeData.fakeLampOff()
 
     fetch
         .mockResponseOnce(JSON.stringify(
@@ -491,7 +495,7 @@ test('Set scooter in service mode', async () => {
                         available: true,
                         decomissioned: false,
                         beingServiced: false,
-                        disabled: true,
+                        disabled: false,
                         connected: false
                     }
                 ]
@@ -500,7 +504,7 @@ test('Set scooter in service mode', async () => {
         .mockResponseOnce(undefined, { status: 204 })
 
     const serviced = true
-    const result = await ScooterUtils.servicedOrNot(serviced)
+    const result = await ScooterUtils.setServiced(serviced, scooterId)
     const expected = {
         "success": true,
         "message": "Successfully updated scooter information",
@@ -513,10 +517,11 @@ test('Set scooter in service mode', async () => {
     expect(fetch.mock.calls[1][1].method).toEqual("PUT")
 })
 
-test('Change from service mode', async () => {
+test('Set scooter not in service mode', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
     const scooterId = 1
+    FakeData.fakeLampOn()
 
     fetch
         .mockResponseOnce(JSON.stringify(
@@ -531,10 +536,10 @@ test('Change from service mode', async () => {
                         battery: 0.51,
                         maxSpeed: 20,
                         charging: false,
-                        available: true,
+                        available: false,
                         decomissioned: false,
                         beingServiced: true,
-                        disabled: true,
+                        disabled: false,
                         connected: false
                     }
                 ]
@@ -543,7 +548,7 @@ test('Change from service mode', async () => {
         .mockResponseOnce(undefined, { status: 204 })
 
     const serviced = false
-    const result = await ScooterUtils.servicedOrNot(serviced)
+    const result = await ScooterUtils.setServiced(serviced, scooterId)
     const expected = {
         "success": true,
         "message": "Successfully updated scooter information",
@@ -577,8 +582,8 @@ test('Change to charging and not available', async () => {
                         charging: false,
                         available: true,
                         decomissioned: false,
-                        beingServiced: true,
-                        disabled: true,
+                        beingServiced: false,
+                        disabled: false,
                         connected: false
                     }
                 ]
@@ -621,8 +626,8 @@ test('Change to not charging and available', async () => {
                         charging: true,
                         available: false,
                         decomissioned: false,
-                        beingServiced: true,
-                        disabled: true,
+                        beingServiced: false,
+                        disabled: false,
                         connected: false
                     }
                 ]
@@ -642,4 +647,222 @@ test('Change to not charging and available', async () => {
     expect(fetch.mock.calls.length).toEqual(2)
     expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
     expect(fetch.mock.calls[1][1].method).toEqual("PUT")
+})
+
+test('Set scooter as decomissoned', async () => {
+    const backendServer = process.env.BACKEND
+    const version = process.env.VERSION
+    const scooterId = 1
+    FakeData.fakeLampOff()
+
+    fetch
+        .mockResponseOnce(JSON.stringify(
+            {
+                data: [
+                    {
+                        id: 1,
+                        createdAt: "2023-12-04T10:11:12.000Z",
+                        updatedAt: "2023-12-05T10:11:12.000Z",
+                        positionX: 59.334591,
+                        positionY: 18.063240,
+                        battery: 0.51,
+                        maxSpeed: 20,
+                        charging: false,
+                        available: true,
+                        decomissioned: false,
+                        beingServiced: false,
+                        disabled: false,
+                        connected: false
+                    }
+                ]
+            }, 200
+        ))
+        .mockResponseOnce(undefined, { status: 204 })
+
+    const decomissioned = true
+    const result = await ScooterUtils.setDecomissioned(decomissioned, scooterId)
+    const expected = {
+        "success": true,
+        "message": "Successfully updated scooter information",
+    }
+
+    expect(result.success).toEqual(expected.success)
+    expect(result.message).toEqual(expected.message)
+    expect(fetch.mock.calls.length).toEqual(2)
+    expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
+    expect(fetch.mock.calls[1][1].method).toEqual("PUT")
+})
+
+test('Set scooter not in decomissioned mode', async () => {
+    const backendServer = process.env.BACKEND
+    const version = process.env.VERSION
+    const scooterId = 1
+    FakeData.fakeLampOn()
+
+    fetch
+        .mockResponseOnce(JSON.stringify(
+            {
+                data: [
+                    {
+                        id: 1,
+                        createdAt: "2023-12-04T10:11:12.000Z",
+                        updatedAt: "2023-12-05T10:11:12.000Z",
+                        positionX: 59.334591,
+                        positionY: 18.063240,
+                        battery: 0.51,
+                        maxSpeed: 20,
+                        charging: false,
+                        available: false,
+                        decomissioned: true,
+                        beingServiced: false,
+                        disabled: false,
+                        connected: false
+                    }
+                ]
+            }, 200
+        ))
+        .mockResponseOnce(undefined, { status: 204 })
+
+    const decomissioned = false
+    const result = await ScooterUtils.setDecomissioned(decomissioned, scooterId)
+    const expected = {
+        "success": true,
+        "message": "Successfully updated scooter information",
+    }
+
+    expect(result.success).toEqual(expected.success)
+    expect(result.message).toEqual(expected.message)
+    expect(fetch.mock.calls.length).toEqual(2)
+    expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
+    expect(fetch.mock.calls[1][1].method).toEqual("PUT")
+})
+
+test('Check available changes to false if decomissioned changes to true', async () => {
+    const backendServer = process.env.BACKEND
+    const version = process.env.VERSION
+    const scooterId = 1
+
+    const partialWSMessage = {
+        decomissioned: true
+    }
+
+    fetch
+        .mockResponseOnce(JSON.stringify(
+            {
+                data: [
+                    {
+                        id: 1,
+                        createdAt: "2023-12-04T10:11:12.000Z",
+                        updatedAt: "2023-12-05T10:11:12.000Z",
+                        positionX: 59.334591,
+                        positionY: 18.063240,
+                        battery: 0.51,
+                        maxSpeed: 20,
+                        charging: false,
+                        available: true,
+                        decomissioned: false,
+                        beingServiced: false,
+                        disabled: false,
+                        connected: false
+                    }
+                ]
+            }, 200
+        ))
+        .mockResponseOnce(undefined, { status: 204 })
+
+    const result = await ScooterUtils.checkStatusChange(scooterId, partialWSMessage)
+    const expected = {
+        success: true,
+        "message": "Successfully updated scooter information",
+        available: false
+    }
+
+    expect(result).toEqual(expected)
+    expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
+    expect(fetch.mock.calls[1][1].method).toEqual("PUT")
+    expect(fetch.mock.calls.length).toEqual(2)
+})
+
+test('Check available changes to true if beingServiced changes to false', async () => {
+    const backendServer = process.env.BACKEND
+    const version = process.env.VERSION
+    const scooterId = 1
+
+    const partialWSMessage = {
+        beingServiced: false
+    }
+
+    fetch
+        .mockResponseOnce(JSON.stringify(
+            {
+                data: [
+                    {
+                        id: 1,
+                        createdAt: "2023-12-04T10:11:12.000Z",
+                        updatedAt: "2023-12-05T10:11:12.000Z",
+                        positionX: 59.334591,
+                        positionY: 18.063240,
+                        battery: 0.51,
+                        maxSpeed: 20,
+                        charging: false,
+                        available: false,
+                        decomissioned: false,
+                        beingServiced: true,
+                        disabled: false,
+                        connected: false
+                    }
+                ]
+            }, 200
+        ))
+        .mockResponseOnce(undefined, { status: 204 })
+
+    const result = await ScooterUtils.checkStatusChange(scooterId, partialWSMessage)
+    const expected = {
+        success: true,
+        "message": "Successfully updated scooter information",
+        available: true
+    }
+
+    expect(result).toEqual(expected)
+    expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
+    expect(fetch.mock.calls[1][1].method).toEqual("PUT")
+    expect(fetch.mock.calls.length).toEqual(2)
+})
+
+test('Check that available does not change with wrong message', async () => {
+    const scooterId = 1
+
+    const partialWSMessage = {
+        charging: true
+    }
+
+    fetch
+        .mockResponseOnce(JSON.stringify(
+            {
+                data: [
+                    {
+                        id: 1,
+                        createdAt: "2023-12-04T10:11:12.000Z",
+                        updatedAt: "2023-12-05T10:11:12.000Z",
+                        positionX: 59.334591,
+                        positionY: 18.063240,
+                        battery: 0.51,
+                        maxSpeed: 20,
+                        charging: true,
+                        available: true,
+                        decomissioned: false,
+                        beingServiced: false,
+                        disabled: false,
+                        connected: false
+                    }
+                ]
+            }, 200
+        ))
+
+    const result = await ScooterUtils.checkStatusChange(scooterId, partialWSMessage)
+    const expected = {
+        success: false
+    }
+
+    expect(result).toEqual(expected)
 })
