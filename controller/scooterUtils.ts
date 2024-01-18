@@ -52,6 +52,9 @@ export default {
                 this.updateLog(start, customerId, position)
             } else if (statusMessage.success == false) {
                 this.updateLogDatabaseFail(scooterId)
+                rentScooterMessage = {
+                    "message": "Failed to update database"
+                }
             }
         } else {
             rentScooterMessage = {
@@ -76,7 +79,7 @@ export default {
         let returnScooterMessage: ScooterMessage = {}
 
         if (!scooter.available) {
-            const batteryStatus = this.checkBattery(scooter)
+            const batteryStatus = this.batteryWarning(scooter)
             const needsCharging = batteryStatus.needsCharging
 
             scooter.available = true
@@ -98,6 +101,9 @@ export default {
                 this.updateLog(start, customerId, position)
             } else if (statusMessage.success == false) {
                 this.updateLogDatabaseFail(scooterId)
+                returnScooterMessage = {
+                    "message": "Failed to update database"
+                }
             }
         } else {
             returnScooterMessage = {

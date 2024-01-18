@@ -13,23 +13,21 @@ test('Successfully GET information about a single scooter', async () => {
 
     fetch.mockResponseOnce(JSON.stringify(
         {
-            data: [
-                {
-                    id: 1,
-                    createdAt: "2023-12-04T10:11:12.000Z",
-                    updatedAt: "2023-12-05T10:11:12.000Z",
-                    positionX: 59.334591,
-                    positionY: 18.063240,
-                    battery: 50,
-                    maxSpeed: 20,
-                    charging: false,
-                    available: true,
-                    decomissioned: false,
-                    beingServiced: false,
-                    disabled: false,
-                    connected: false
-                }
-            ]
+            data: {
+                id: 1,
+                createdAt: "2023-12-04T10:11:12.000Z",
+                updatedAt: "2023-12-05T10:11:12.000Z",
+                positionX: 59.334591,
+                positionY: 18.063240,
+                battery: 50,
+                maxSpeed: 20,
+                charging: false,
+                available: true,
+                decomissioned: false,
+                beingServiced: false,
+                disabled: false,
+                connected: false
+            }
         }
     ), { status: 200 })
 

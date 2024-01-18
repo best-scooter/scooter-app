@@ -41,23 +41,21 @@ test('Successfully rent a scooter', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: true,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: true,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -89,23 +87,21 @@ test('Fail to rent a scooter. Scooter is in service mode and not available.', as
 
     fetch.mockResponseOnce(JSON.stringify(
         {
-            data: [
-                {
-                    id: 1,
-                    createdAt: "2023-12-04T10:11:12.000Z",
-                    updatedAt: "2023-12-05T10:11:12.000Z",
-                    positionX: 59.334591,
-                    positionY: 18.063240,
-                    battery: 0.51,
-                    maxSpeed: 20,
-                    charging: false,
-                    available: false,
-                    decomissioned: false,
-                    beingServiced: true,
-                    disabled: false,
-                    connected: false
-                }
-            ]
+            data: {
+                id: 1,
+                createdAt: "2023-12-04T10:11:12.000Z",
+                updatedAt: "2023-12-05T10:11:12.000Z",
+                positionX: 59.334591,
+                positionY: 18.063240,
+                battery: 0.51,
+                maxSpeed: 20,
+                charging: false,
+                available: true,
+                decomissioned: false,
+                beingServiced: true,
+                disabled: false,
+                connected: false
+            }
         }, 200
     ))
 
@@ -122,6 +118,50 @@ test('Fail to rent a scooter. Scooter is in service mode and not available.', as
     expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
 })
 
+test('Fail to update database when renting a scooter.', async () => {
+    const backendServer = process.env.BACKEND
+    const version = process.env.VERSION
+    const scooterId = 1
+    const customerId = 2
+    FakeData.fakeBatteryLevel51()
+    FakeData.fakeStockholmPosition()
+
+    fetch
+        .mockResponseOnce(JSON.stringify(
+            {
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: true,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
+            }, 200
+        ))
+        .mockResponseOnce(undefined, { status: 404 })
+
+    const result = await ScooterUtils.beginScooterRent(customerId)
+    const expected = {
+        "message": "Failed to update database"
+    }
+    const log = fs.readFileSync(logPath, readFileFlag)
+    const regEx = /^(ERROR: Database update failed for scooter 8 at )?/
+
+    expect(result.message).toEqual(expected.message)
+    expect(log).toMatch(regEx)
+    expect(fetch.mock.calls.length).toEqual(2)
+    expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
+    expect(fetch.mock.calls[1][1].method).toEqual("PUT")
+})
+
 test('Successfully return a scooter', async () => {
     const backendServer = process.env.BACKEND
     const version = process.env.VERSION
@@ -133,23 +173,21 @@ test('Successfully return a scooter', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.6,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: false,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.6,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: false,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -181,23 +219,21 @@ test('Fail return a scooter. Already available', async () => {
 
     fetch.mockResponseOnce(JSON.stringify(
         {
-            data: [
-                {
-                    id: 1,
-                    createdAt: "2023-12-04T10:11:12.000Z",
-                    updatedAt: "2023-12-05T10:11:12.000Z",
-                    positionX: 59.334591,
-                    positionY: 18.063240,
-                    battery: 0.6,
-                    maxSpeed: 20,
-                    charging: false,
-                    available: true,
-                    decomissioned: false,
-                    beingServiced: false,
-                    disabled: false,
-                    connected: false
-                }
-            ]
+            data: {
+                id: 1,
+                createdAt: "2023-12-04T10:11:12.000Z",
+                updatedAt: "2023-12-05T10:11:12.000Z",
+                positionX: 59.334591,
+                positionY: 18.063240,
+                battery: 0.6,
+                maxSpeed: 20,
+                charging: false,
+                available: true,
+                decomissioned: false,
+                beingServiced: false,
+                disabled: false,
+                connected: false
+            }
         }, 200
     ))
 
@@ -212,6 +248,50 @@ test('Fail return a scooter. Already available', async () => {
     expect(log).toMatch(regEx)
     expect(fetch.mock.calls.length).toEqual(1)
     expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
+})
+
+test('Fail to update database when returning a scooter', async () => {
+    const backendServer = process.env.BACKEND
+    const version = process.env.VERSION
+    const scooterId = 1
+    const customerId = 2
+    FakeData.fakeBatteryLevel51()
+    FakeData.fakeStockholmPosition()
+
+    fetch
+        .mockResponseOnce(JSON.stringify(
+            {
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: false,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
+            }, 200
+        ))
+        .mockResponseOnce(undefined, { status: 404 })
+
+    const result = await ScooterUtils.endScooterRent(customerId)
+    const expected = {
+        "message": "Failed to update database"
+    }
+    const log = fs.readFileSync(logPath, readFileFlag)
+    const regEx = /^(ERROR: Database update failed for scooter 8 at )?/
+
+    expect(result.message).toEqual(expected.message)
+    expect(log).toMatch(regEx)
+    expect(fetch.mock.calls.length).toEqual(2)
+    expect(fetch.mock.calls[0][0]).toEqual(backendServer + version + "/scooter/" + scooterId)
+    expect(fetch.mock.calls[1][1].method).toEqual("PUT")
 })
 
 test('Log the start of a journey', () => {
@@ -246,10 +326,20 @@ test('Log the end of a journey', () => {
 
 test('Log a failed rent/return of scooter', () => {
     const customerId = 7
-    ScooterUtils.updateLogFail(customerId)
+    ScooterUtils.updateLogRentFail(customerId)
 
     const result = fs.readFileSync(logPath, readFileFlag)
     const regEx = /^(ERROR: Customer 7 attempted to rent\/return scooter)?/
+
+    expect(result).toMatch(regEx)
+})
+
+test('Log a database update fail', () => {
+    const scooterId = 8
+    ScooterUtils.updateLogDatabaseFail(scooterId)
+
+    const result = fs.readFileSync(logPath, readFileFlag)
+    const regEx = /^(ERROR: Database update failed for scooter 8 at )?/
 
     expect(result).toMatch(regEx)
 })
@@ -261,23 +351,21 @@ test('Update position', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: true,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: true,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -301,23 +389,21 @@ test('Check if available', async () => {
 
     fetch.mockResponseOnce(JSON.stringify(
         {
-            data: [
-                {
-                    id: 1,
-                    createdAt: "2023-12-04T10:11:12.000Z",
-                    updatedAt: "2023-12-05T10:11:12.000Z",
-                    positionX: 59.334591,
-                    positionY: 18.063240,
-                    battery: 0.51,
-                    maxSpeed: 20,
-                    charging: false,
-                    available: true,
-                    decomissioned: false,
-                    beingServiced: false,
-                    disabled: false,
-                    connected: false
-                }
-            ]
+            data: {
+                id: 1,
+                createdAt: "2023-12-04T10:11:12.000Z",
+                updatedAt: "2023-12-05T10:11:12.000Z",
+                positionX: 59.334591,
+                positionY: 18.063240,
+                battery: 0.51,
+                maxSpeed: 20,
+                charging: false,
+                available: true,
+                decomissioned: false,
+                beingServiced: false,
+                disabled: false,
+                connected: false
+            }
         }, 200
     ))
 
@@ -345,23 +431,21 @@ test('Set scooter as disabled', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: true,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: true,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -389,23 +473,21 @@ test('Set scooter as not disabled', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: false,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: true,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: false,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: true,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -443,7 +525,7 @@ test('Check battery level', async () => {
 
 
     const fakeBattery = FakeData.fakeBatteryLevel()
-    const result = await ScooterUtils.checkBattery(scooter)
+    const result = await ScooterUtils.batteryWarning(scooter)
 
     expect(result.batteryLevel).toEqual(fakeBattery)
 })
@@ -466,7 +548,7 @@ test('Check that scooter warns when battery is low', async () => {
     }
 
     const fakeBattery = FakeData.fakeLowBattery()
-    const result = await ScooterUtils.checkBattery(scooter)
+    const result = await ScooterUtils.batteryWarning(scooter)
     const needsChargingTrue = true
 
     expect(result.batteryLevel).toEqual(fakeBattery)
@@ -482,23 +564,21 @@ test('Set scooter in service mode', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: true,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: true,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -526,23 +606,21 @@ test('Set scooter not in service mode', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: false,
-                        decomissioned: false,
-                        beingServiced: true,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: false,
+                    decomissioned: false,
+                    beingServiced: true,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -570,23 +648,21 @@ test('Change to charging and not available', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: true,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: true,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -614,23 +690,21 @@ test('Change to not charging and available', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: true,
-                        available: false,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: true,
+                    available: false,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -658,23 +732,21 @@ test('Set scooter as decomissoned', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: true,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: true,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -702,23 +774,21 @@ test('Set scooter not in decomissioned mode', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: false,
-                        decomissioned: true,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: false,
+                    decomissioned: true,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -749,23 +819,21 @@ test('Check available changes to false if decomissioned changes to true', async 
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: true,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: true,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -795,23 +863,21 @@ test('Check available changes to true if beingServiced changes to false', async 
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: false,
-                        available: false,
-                        decomissioned: false,
-                        beingServiced: true,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: false,
+                    available: false,
+                    decomissioned: false,
+                    beingServiced: true,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
         .mockResponseOnce(undefined, { status: 204 })
@@ -839,23 +905,21 @@ test('Check that available does not change with wrong message', async () => {
     fetch
         .mockResponseOnce(JSON.stringify(
             {
-                data: [
-                    {
-                        id: 1,
-                        createdAt: "2023-12-04T10:11:12.000Z",
-                        updatedAt: "2023-12-05T10:11:12.000Z",
-                        positionX: 59.334591,
-                        positionY: 18.063240,
-                        battery: 0.51,
-                        maxSpeed: 20,
-                        charging: true,
-                        available: true,
-                        decomissioned: false,
-                        beingServiced: false,
-                        disabled: false,
-                        connected: false
-                    }
-                ]
+                data: {
+                    id: 1,
+                    createdAt: "2023-12-04T10:11:12.000Z",
+                    updatedAt: "2023-12-05T10:11:12.000Z",
+                    positionX: 59.334591,
+                    positionY: 18.063240,
+                    battery: 0.51,
+                    maxSpeed: 20,
+                    charging: true,
+                    available: true,
+                    decomissioned: false,
+                    beingServiced: false,
+                    disabled: false,
+                    connected: false
+                }
             }, 200
         ))
 
