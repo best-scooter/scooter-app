@@ -111,6 +111,12 @@ export default {
         return token
     },
 
+    /**
+     * Get the value of an environment variable
+     * @param {string} name The name of the environment variable
+     * @returns {string}
+     * @throws {error} If the required environment variable does not exist
+     */
     getEnvVariable: function (name: string): string {
         const variable = process.env[name]
 

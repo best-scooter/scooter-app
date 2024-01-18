@@ -20,6 +20,7 @@ export default {
      * Get the scooters position from the fake hardware.
      * 
      * @returns {Object} The information about latitude (position_x) and longitude (position_y)
+     * @throws {error} If the requested file can not be read
      */
     checkPosition: function (scooterId: number): Position {
         try {
@@ -37,6 +38,7 @@ export default {
      * Get the battery level from the fake hardware.
      * 
      * @returns {number} Battery level
+    * @throws {error} If the requested file can not be read
      */
     checkBattery: function (scooterId: number): number {
         try {
@@ -54,6 +56,7 @@ export default {
      * Get the speed from the fake hardware.
      * 
      * @returns {number} Current speed
+     * @throws {error} If the requested file can not be read
      */
     checkSpeedometer: function (scooterId: number): number {
         try {
@@ -68,6 +71,7 @@ export default {
 
     /**
      * Change the fake lamp to on, if the scooter is being charged to show it is not available
+     * @throws {error} If the requested file can not be read
      */
     lampOn: function (scooterId: number): void {
         try {
@@ -83,6 +87,7 @@ export default {
 
     /**
      * Change the fake lamp to off, if the scooter is not being charged to show it is available
+     * @throws {error} If the requested file can not be read
      */
     lampOff: function (scooterId: number): void {
         try {
@@ -147,6 +152,7 @@ export default {
 
     /**
      * Creates empty files if necessary
+     * @throws {error} If the requested file does not exists and then creates it
      */
     touchFiles: function (): void {
         const files = ["battery", "gps", "redLight", "speedometer"]

@@ -2,7 +2,16 @@
 
 Program som är tänkt att att köras i varje simulerad cykel och styra/övervaka den. Detta repo är en del av av ett större system och ingår i organisationen best-scooter: https://github.com/best-scooter
 Programmet kan köras individuellt med scriptet 'npm run dev', men inte mycket kommer hända då scooter-app förlitar sig på flera av de andra delsystemen i best-scooter.
-För att köra scooter-app så som det är tänk i simulering behövs även database-server, api-server, ws-server, mock-service och docker som också ingår i best-scooter. Varje cykel kan då köras som en individuell container i ett större system.
+För att köra scooter-app så som det är tänk i simulering behövs även database-server, api-server, ws-server och mock-service som också ingår i best-scooter. För att kunna se websocket-meddelanden som scootern tar emot och skicker behövs även wsclient-prototype. Varje cykel kan då köras som en individuell container i ett större system.
+
+## Starta simulering
+
+1. Hämta hem docker-repot från best-scooter. Denna simulering utgår ifrån de filer som finn i alt-mappen.
+2. Hämta hem de docker-images som behövs utifrån det som finns i docker-repot/alt/docker-compose.yml
+3. Kör scriptet simulation.sh <NR_OF_CUSTOMERS> <NR_OF_SCOOTERS> <SPEED_MULTIPLIER> i valfri terminal
+4. För att se websocket-meddelanden som scootern skickar: Öppna Firefox på localhost:3001/. Login, Connect, Send "scooter".
+5. För att läsa scooterns log: Gå in i en pågående scooter-container (minst en kund måste ha påbörjat en resa med scootern, annars är loggen tom) med "docker exec -it <container-name> bash". Därefter "cat scooter-trips.log".
+6. För att läsa scooterns hårdvaru-filer: Inne i scooter-containern "cd model/hardware" och sedan "cat <battery / gps / redLight / speedometer>."
 
 ## Scripts
 

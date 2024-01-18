@@ -136,6 +136,10 @@ export default {
         }
     },
 
+    /**
+     * Updates the log in case PUT request for the scooter fails.
+     * @param {number} scooterId 
+     */
     updateLogDatabaseFail: function (scooterId: number): void {
         const currentDate = HardwareBridge.getDate()
         const currentTime = HardwareBridge.getTime()
@@ -145,6 +149,10 @@ export default {
         fs.appendFileSync(logPath, string, appendFileFlag)
     },
 
+    /**
+     * Updates the log in case a customer fails to rent or return a scooter
+     * @param {number} customerId 
+     */
     updateLogRentFail: function (customerId: number): void {
         const currentDate = HardwareBridge.getDate()
         const currentTime = HardwareBridge.getTime()
@@ -203,7 +211,7 @@ export default {
 
         const battery: BatteryMessage = {
             "batteryLevel": batteryLevel,
-            "needsCharging": batteryLevel < 0.1 && !scooter.charging, // TODO: Lägg till i ws-meddelande
+            "needsCharging": batteryLevel < 0.1 && !scooter.charging
         }
 
         return battery
@@ -258,6 +266,13 @@ export default {
         return statusMessage
     },
 
+    /**
+     * Change the decomissioned status
+     * @async
+     * @param {boolean} decomissioned 
+     * @param {number} scooterId 
+     * @returns {Object} Information if the update was successful or not
+     */
     setDecomissioned: async function (decomissioned: boolean, scooterId: number): Promise<StatusMessage> {
         const scooter = await ScooterApi.read(scooterId)
 
